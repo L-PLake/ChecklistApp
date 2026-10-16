@@ -119,6 +119,12 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
 .icon-option[aria-pressed=true]{border-color:var(--accent);background:transparent;box-shadow:none}
 .dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:17px}
 .dialog-actions button{padding:10px 15px;border:0;border-radius:10px;font-weight:700}
+.share-options{display:grid;gap:9px}
+.share-option{width:100%;min-height:46px;padding:11px 15px;border:0;border-radius:10px;font-weight:700}
+.share-option.primary{background:var(--accent);color:#fff}
+.share-option.primary:hover{background:#264c3b}
+.share-option.secondary{background:#f1f0eb;color:#566057}
+.share-option.secondary:hover{background:#e9e8e2}
 .cancel-button{background:#f1f0eb;color:#566057}
 .create-button{background:var(--accent);color:#fff}
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
@@ -269,6 +275,18 @@ body.is-checklist .overflow{display:block}
     </form>
   </div>
 </dialog>
+<dialog class="form-sheet" id="shareSheet" aria-labelledby="shareTitle">
+  <div class="sheet-content">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-heading"><h2 id="shareTitle">Share all lists</h2><button class="sheet-close" type="button" data-close="shareSheet" aria-label="Close sharing options">×</button></div>
+    <p class="dialog-hint">Choose how you want to share your checklists.</p>
+    <div class="share-options">
+      <button class="share-option primary" id="nativeShareBtn" type="button">Share with your device…</button>
+      <button class="share-option secondary" id="copyShareBtn" type="button">Copy link</button>
+    </div>
+    <div class="dialog-actions"><button class="cancel-button" type="button" data-close="shareSheet">Cancel</button></div>
+  </div>
+</dialog>
 <input id="fileInput" type="file" accept="application/json,.json" hidden>
 
 <script>
@@ -323,7 +341,13 @@ body.is-checklist .overflow{display:block}
   let currentPage = 'library';
   history.replaceState({}, '');
   const activeList = () => state.lists.find(list => list.id === state.activeListId) || state.lists[0];
-  const toast = message => { $('toast').textContent = message; };
+  let toastTimeout;
+  const toast = message => {
+    const element = $('toast');
+    clearTimeout(toastTimeout);
+    element.textContent = message;
+    toastTimeout = setTimeout(() => { element.textContent = ''; }, 3000);
+  };
   const save = () => {
     try {
       localStorage.setItem(KEY, JSON.stringify(state));
@@ -489,7 +513,7 @@ body.is-checklist .overflow{display:block}
       touchStart = undefined;
     }, {passive: true});
   };
-  ['createSheet', 'renameSheet'].forEach(id => closeDialogFromBackdrop($(id)));
+  ['createSheet', 'renameSheet', 'shareSheet'].forEach(id => closeDialogFromBackdrop($(id)));
   document.querySelectorAll('.icon-picker').forEach(picker => {
     picker.addEventListener('click', event => {
       const button = event.target.closest('[data-icon]');
@@ -517,6 +541,9 @@ body.is-checklist .overflow{display:block}
   });
   $('exportBtn').addEventListener('click', () => exportBackup());
   $('shareBtn').addEventListener('click', () => shareChecklist());
+  $('nativeShareBtn').hidden = typeof navigator.share !== 'function';
+  $('nativeShareBtn').addEventListener('click', () => shareWithOs());
+  $('copyShareBtn').addEventListener('click', () => copyShareUrl());
   $('importBtn').addEventListener('click', () => $('fileInput').click());
   window.addEventListener('popstate', event => {
     currentPage = event.state?.checklist ? 'checklist' : 'library';
@@ -601,19 +628,35 @@ body.is-checklist .overflow{display:block}
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     toast('Backup exported. Keep it somewhere safe.');
   };
-  const shareChecklist = async () => {
+  const createShareUrl = () => {
     const bytes = new TextEncoder().encode(JSON.stringify(state));
     let binary = '';
     for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
     const encoded = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
     const url = new URL(location.href);
     url.hash = `share=${encoded}`;
+    return url.href;
+  };
+  const shareChecklist = () => showDialog('shareSheet');
+  const shareWithOs = async () => {
+    const url = createShareUrl();
+    $('shareSheet').close();
+    try {
+      await navigator.share({title: 'My Checklist', text: 'Here are my checklists.', url});
+      toast('Share link ready to send.');
+    } catch (error) {
+      if (error.name !== 'AbortError') toast('Could not open the share menu. Try copying the link instead.');
+    }
+  };
+  const copyShareUrl = async () => {
+    const url = createShareUrl();
+    $('shareSheet').close();
     try {
       if (!navigator.clipboard?.writeText) throw Error('Clipboard unavailable');
-      await navigator.clipboard.writeText(url.href);
+      await navigator.clipboard.writeText(url);
       toast('Share URL copied. Anyone with the link can view this checklist.');
     } catch (_) {
-      if (window.prompt('Copy this share URL:', url.href) === null) toast('Share URL was not copied.');
+      if (window.prompt('Copy this share URL:', url) === null) toast('Share URL was not copied.');
       else toast('Share URL ready to paste. Anyone with the link can view this checklist.');
     }
   };

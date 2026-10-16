@@ -22,6 +22,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .brand{display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;font-size:17px;font-weight:750;letter-spacing:-.025em}
 .brand-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--accent);color:#fff}
 .brand-mark svg{width:19px;height:19px}
+.top-back{display:none;align-items:center;gap:8px;margin-left:-8px;padding:8px;border:0;border-radius:10px;background:transparent;color:#56645a;font-size:14px;font-weight:680}
+.top-back:hover{background:var(--accent-soft);color:var(--accent)}
+.top-back svg{width:20px;height:20px}
+.is-checklist .top-back{display:inline-flex}
+.is-checklist #brandMark,.is-checklist #brandTitle{display:none}
 .overflow{position:relative}
 .overflow summary{list-style:none;display:grid;place-items:center;width:40px;height:40px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer}
 .overflow summary::-webkit-details-marker{display:none}
@@ -48,6 +53,17 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .workspace-inner{width:min(100%,740px);margin:0 auto}
 .mobile-list-picker{display:none}
 .checklist-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:15px 0 22px}
+.title-edit-row{display:flex;align-items:center;gap:9px;min-width:0}
+.title-edit-row h1{min-width:0}
+.edit-title-button{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;margin-top:4px;border:0;border-radius:10px;background:transparent;color:#818a81}
+.edit-title-button:hover{background:var(--accent-soft);color:var(--accent)}
+.edit-title-button svg{width:18px;height:18px}
+.checklist-notes{margin:-10px 0 24px}
+.checklist-notes label{display:block;margin-bottom:6px;color:#717970;font-size:12px;font-weight:700}
+.checklist-notes textarea{display:block;width:100%;min-height:44px;max-height:180px;padding:10px 12px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--text);font:inherit;line-height:1.5;resize:vertical}
+.checklist-notes textarea::placeholder{color:#9ba198}
+.checklist-notes textarea:hover{border-color:var(--line);background:rgba(255,255,255,.55)}
+.checklist-notes textarea:focus{border-color:#8aa995;background:#fff;outline:3px solid rgba(134,174,151,.2)}
 .eyebrow{margin:0 0 6px;color:var(--muted);font-size:11px;font-weight:750;letter-spacing:.13em}
 h1{margin:0;font-size:clamp(28px,4vw,38px);line-height:1.12;letter-spacing:-.045em;overflow-wrap:anywhere}
 .count{padding-bottom:4px;color:var(--muted);font-size:13px;white-space:nowrap}
@@ -98,12 +114,44 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
 .dialog-actions button{padding:10px 15px;border:0;border-radius:10px;font-weight:700}
 .cancel-button{background:#f1f0eb;color:#566057}
 .create-button{background:var(--accent);color:#fff}
-.notes-sheet{width:min(100% - 32px,520px)}
-.notes-sheet textarea{min-height:190px}
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+[hidden]{display:none!important}
+.app-layout{display:block;min-height:calc(100vh - 76px);padding:54px 32px 72px}
+.is-library .overflow{display:none}
+.library-screen{width:min(100%,900px);margin:0 auto}
+.library-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:32px}
+.library-heading h1{font-size:clamp(31px,5vw,42px)}
+.library-subtitle{margin:10px 0 0;color:var(--muted);font-size:15px}
+.library-new{display:flex;align-items:center;gap:9px;flex:0 0 auto;padding:12px 16px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-weight:700}
+.library-new:hover{background:#264c3b}
+.library-new span{font-size:20px;line-height:1}
+.library-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.library-card{display:flex;flex-direction:column;min-height:150px;padding:19px;border:1px solid var(--line);border-radius:17px;background:#fff;color:var(--text);text-align:left;transition:border-color .15s,transform .15s,box-shadow .15s}
+.library-card:hover{transform:translateY(-2px);border-color:#c7d5ca;box-shadow:0 10px 28px rgba(32,45,38,.07)}
+.library-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.library-card-title{font-size:17px;font-weight:730;letter-spacing:-.02em;overflow-wrap:anywhere}
+.library-card-arrow{color:#9aa199;font-size:20px;line-height:1}
+.library-card-meta{margin-top:auto;padding-top:21px;color:var(--muted);font-size:13px}
+.library-card-progress{height:4px;margin-top:9px;border-radius:5px;background:#eeeee9;overflow:hidden}
+.library-card-progress span{display:block;height:100%;border-radius:5px;background:#83a38d}
+.last-opened{align-self:flex-start;margin-top:9px;padding:3px 8px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:700}
+.library-empty{grid-column:1/-1;padding:52px 20px;border:1px dashed #d9dbd3;border-radius:17px;color:var(--muted);text-align:center}
+.library-empty p{margin:0 0 14px}
+.library-empty button{padding:9px 13px;border:0;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-weight:700}
+.library-tools{display:flex;align-items:center;justify-content:space-between;gap:22px;margin-top:38px;padding:20px 0;border-top:1px solid var(--line)}
+.library-tools h2{margin:0;font-size:16px;letter-spacing:-.02em}
+.library-tools p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.library-tool-actions{display:flex;flex-wrap:wrap;gap:8px}
+.library-tool-actions button{display:inline-flex;align-items:center;gap:7px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#526057;font-size:13px;font-weight:650}
+.library-tool-actions button:hover{border-color:#c7d5ca;background:#fbfcfa;color:var(--accent)}
+.library-tool-actions svg{width:17px;height:17px}
+.checklist-content{width:min(100%,850px);margin:0 auto}
+body.is-checklist .overflow{display:block}
+#toast{position:fixed;z-index:6;left:50%;bottom:max(20px,env(safe-area-inset-bottom));width:max-content;max-width:calc(100% - 32px);padding:9px 14px;border:1px solid #dce6dd;border-radius:11px;background:#fff;box-shadow:0 8px 25px rgba(32,45,38,.12);text-align:center;transform:translateX(-50%)}
+#toast:empty{display:none}
 @media(max-width:760px){
  .topbar{height:66px;padding:0 20px}
- .app-layout{min-height:calc(100vh - 66px)}
+ .app-layout{min-height:calc(100vh - 66px);padding:34px 21px max(38px,env(safe-area-inset-bottom))}
  .sidebar{display:none}
  .workspace{padding:20px 22px max(36px,env(safe-area-inset-bottom))}
  .mobile-list-picker{display:block;margin-bottom:14px}
@@ -118,75 +166,74 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
  .form-sheet{position:fixed;inset:auto 0 0;margin:0;width:100%;max-width:none;border-radius:23px 23px 0 0}
  .form-sheet .sheet-content{padding:13px 22px max(25px,env(safe-area-inset-bottom))}
  .form-sheet .sheet-handle{display:block}
- .notes-sheet{width:100%}
+ .library-heading{align-items:flex-start;flex-direction:column;gap:19px;margin-bottom:23px}
+ .library-new{width:100%;justify-content:center}
+ .library-grid{grid-template-columns:1fr;gap:10px}
+ .library-card{min-height:132px;padding:16px}
+ .library-tools{align-items:stretch;flex-direction:column;gap:14px;margin-top:30px;padding-top:17px}
+ .library-tool-actions{display:grid;grid-template-columns:1fr}
+ .library-tool-actions button{min-height:43px}
+ .checklist-content{width:100%}
 }
 @media(min-width:761px){
  .sheet{border-radius:23px 23px 0 0}
 }
 </style>
 </head>
-<body>
+<body class="is-library">
 <div class="app-shell">
   <header class="topbar">
-    <a class="brand" href="./" aria-label="My Checklist home">
-      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m6 12.5 3.7 3.7L18.5 7.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      <span>My Checklist</span>
-    </a>
+    <div class="brand" id="brand">
+      <span class="brand-mark" id="brandMark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m6 12.5 3.7 3.7L18.5 7.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <button class="top-back" id="topBackButton" type="button" aria-label="Back to all checklists"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5M7.5 10H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>All checklists</span></button>
+      <span id="brandTitle">My Checklist</span>
+    </div>
     <details class="overflow" id="overflowMenu">
       <summary aria-label="Checklist options"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></summary>
       <div class="overflow-menu" aria-label="Checklist actions">
-        <button type="button" data-action="rename">Rename checklist</button>
-        <button type="button" data-action="notes">Notes</button>
         <button type="button" data-action="clear">Clear ticks</button>
-        <button type="button" data-action="export">Export backup</button>
-        <button type="button" data-action="share">Copy share URL</button>
-        <button type="button" data-action="import">Import backup</button>
         <button type="button" class="danger" data-action="delete">Delete checklist</button>
       </div>
     </details>
   </header>
-  <div class="app-layout">
-    <aside class="sidebar" aria-label="Checklist navigation">
-      <p class="sidebar-label">Your checklists</p>
-      <nav class="sidebar-lists" id="sidebarLists" aria-label="Checklists"></nav>
-      <button class="sidebar-new" id="sidebarNew" type="button"><span aria-hidden="true">+</span> New checklist</button>
-    </aside>
-    <main class="workspace">
-      <div class="workspace-inner">
-        <div class="mobile-list-picker">
-          <button id="openLists" type="button" aria-haspopup="dialog" aria-controls="listSheet">
-            <span id="currentListName">My list</span>
-            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-        </div>
-        <section class="checklist-content" aria-label="Current checklist">
-          <div class="checklist-heading">
-            <div><p class="eyebrow">YOUR CHECKLIST</p><h1 id="listHeading">My list</h1></div>
-            <span class="count" id="count">0 items</span>
-          </div>
-          <div class="task-list" id="tasks" aria-live="polite"></div>
-          <form class="add-form" id="addForm">
-            <label class="visually-hidden" for="newTask">Add an item</label>
-            <input id="newTask" placeholder="Add an item..." maxlength="240" autocomplete="off">
-            <button class="add-button" type="submit"><span aria-hidden="true">+</span> Add item</button>
-          </form>
-          <div id="toast" role="status" aria-live="polite"></div>
-        </section>
+  <main class="app-layout">
+    <section class="library-screen" id="libraryScreen" aria-labelledby="libraryTitle">
+      <div class="library-heading">
+        <div><p class="eyebrow">YOUR SPACE</p><h1 id="libraryTitle">Your checklists</h1><p class="library-subtitle">Pick up where you left off, or start a fresh list.</p></div>
+        <button class="library-new" id="libraryNew" type="button"><span aria-hidden="true">+</span> New checklist</button>
       </div>
-    </main>
-  </div>
+      <div class="library-grid" id="libraryLists" aria-label="All checklists"></div>
+      <section class="library-tools" aria-labelledby="dataTitle">
+        <div><h2 id="dataTitle">Your data</h2><p>Export or share all your checklists together.</p></div>
+        <div class="library-tool-actions">
+          <button type="button" id="exportBtn"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3.5v9m0 0 3.3-3.3M10 12.5 6.7 9.2M4 13v3h12v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Export backup</button>
+          <button type="button" id="shareBtn"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.5 10.5 12.6 7m-5.1 4.5 5.1 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="5.5" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="14.5" cy="5.5" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="14.5" cy="15.5" r="2" stroke="currentColor" stroke-width="1.5"/></svg>Share all lists</button>
+          <button type="button" id="importBtn"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.5v-9m0 0L6.7 6.8M10 3.5l3.3 3.3M4 13v3h12v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Import backup</button>
+        </div>
+      </section>
+    </section>
+    <section class="checklist-content" id="checklistScreen" aria-label="Current checklist" hidden>
+      <div class="workspace-inner">
+        <div class="checklist-heading">
+          <div><p class="eyebrow">YOUR CHECKLIST</p><div class="title-edit-row"><h1 id="listHeading">My list</h1><button class="edit-title-button" id="editTitleButton" type="button" aria-label="Edit checklist name" title="Edit checklist name"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m12.2 4.2 3.6 3.6M4 16l3.7-.8 8.5-8.5a1.8 1.8 0 0 0-2.6-2.6l-8.5 8.5L4 16Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div>
+          <span class="count" id="count">0 items</span>
+        </div>
+        <div class="checklist-notes">
+          <label for="notes">Notes</label>
+          <textarea id="notes" maxlength="4000" rows="2" placeholder="Add a note for this checklist..."></textarea>
+        </div>
+        <div class="task-list" id="tasks" aria-live="polite"></div>
+        <form class="add-form" id="addForm">
+          <label class="visually-hidden" for="newTask">Add an item</label>
+          <input id="newTask" placeholder="Add an item..." maxlength="240" autocomplete="off">
+          <button class="add-button" type="submit"><span aria-hidden="true">+</span> Add item</button>
+        </form>
+      </div>
+    </section>
+    <div id="toast" role="status" aria-live="polite"></div>
+  </main>
 </div>
 
-<dialog class="sheet" id="listSheet" aria-labelledby="listSheetTitle">
-  <div class="sheet-content">
-    <div class="sheet-handle" aria-hidden="true"></div>
-    <div class="sheet-heading"><h2 id="listSheetTitle">Your checklists</h2><button class="sheet-close" type="button" data-close="listSheet" aria-label="Close checklist selector">×</button></div>
-    <input class="selector-search" id="listSearch" type="search" placeholder="Search checklists" aria-label="Search checklists" hidden>
-    <nav class="sheet-list" id="sheetLists" aria-label="Checklists"></nav>
-    <div class="sheet-divider"></div>
-    <button class="sheet-new" id="sheetNew" type="button"><span aria-hidden="true">+</span> Create new checklist</button>
-  </div>
-</dialog>
 <dialog class="form-sheet" id="createSheet" aria-labelledby="createTitle">
   <div class="sheet-content">
     <div class="sheet-handle" aria-hidden="true"></div>
@@ -207,17 +254,6 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
       <label for="renameName">Checklist name</label>
       <input id="renameName" maxlength="80" autocomplete="off" required>
       <div class="dialog-actions"><button class="cancel-button" type="button" data-close="renameSheet">Cancel</button><button class="create-button" type="submit">Save name</button></div>
-    </form>
-  </div>
-</dialog>
-<dialog class="form-sheet notes-sheet" id="notesSheet" aria-labelledby="notesTitle">
-  <div class="sheet-content">
-    <div class="sheet-handle" aria-hidden="true"></div>
-    <div class="sheet-heading"><h2 id="notesTitle">Checklist notes</h2><button class="sheet-close" type="button" data-close="notesSheet" aria-label="Close notes">×</button></div>
-    <form class="dialog-form" id="notesForm">
-      <label for="notes">Notes</label>
-      <textarea id="notes" maxlength="4000" placeholder="Anything you want to remember..."></textarea>
-      <div class="dialog-actions"><button class="cancel-button" type="button" data-close="notesSheet">Cancel</button><button class="create-button" type="submit">Save notes</button></div>
     </form>
   </div>
 </dialog>
@@ -269,6 +305,8 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
   }
   if (!state.activeListId) state.activeListId = state.lists[0].id;
 
+  let currentPage = 'library';
+  history.replaceState({}, '');
   const activeList = () => state.lists.find(list => list.id === state.activeListId) || state.lists[0];
   const toast = message => { $('toast').textContent = message; };
   const save = () => {
@@ -279,48 +317,82 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
     }
     render();
   };
-  const makeListButton = (list, current) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = `list-choice${current ? ' is-current' : ''}`;
-    button.setAttribute('aria-current', current ? 'true' : 'false');
-    button.innerHTML = '<svg class="list-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5.5 4.5h9A1.5 1.5 0 0 1 16 6v9a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 4 15V6a1.5 1.5 0 0 1 1.5-1.5Z" stroke="currentColor" stroke-width="1.5"/><path d="M7.2 8h5.6M7.2 11h5.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
-    const name = document.createElement('span');
-    name.className = 'list-name';
-    name.textContent = list.title || 'Untitled checklist';
-    button.append(name);
-    if (current) {
-      const check = document.createElement('span');
-      check.className = 'current-check';
-      check.setAttribute('aria-label', 'Current checklist');
-      check.textContent = '✓';
-      button.append(check);
-    }
-    button.addEventListener('click', () => {
-      state.activeListId = list.id;
-      save();
-      $('listSheet').close();
-    });
-    return button;
+  const openChecklist = (listId, addHistory = true) => {
+    state.activeListId = listId;
+    currentPage = 'checklist';
+    if (addHistory) history.pushState({checklist: true, listId}, '');
+    save();
   };
-  const renderChoices = () => {
-    const query = $('listSearch').value.trim().toLocaleLowerCase();
-    const matches = state.lists.filter(list => (list.title || 'Untitled checklist').toLocaleLowerCase().includes(query));
-    $('sheetLists').replaceChildren(...matches.map(list => makeListButton(list, list.id === state.activeListId)));
-    if (!matches.length) {
-      const empty = document.createElement('p');
-      empty.className = 'empty';
-      empty.textContent = 'No checklists found.';
-      $('sheetLists').append(empty);
+  const goBack = () => {
+    if (history.state?.checklist) {
+      history.back();
+      return;
     }
+    currentPage = 'library';
+    render();
+  };
+  const renderLibrary = () => {
+    const cards = state.lists.map(list => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'library-card';
+      button.setAttribute('aria-label', `Open checklist: ${list.title || 'Untitled checklist'}`);
+      button.addEventListener('click', () => openChecklist(list.id));
+      const top = document.createElement('span');
+      top.className = 'library-card-top';
+      const title = document.createElement('span');
+      title.className = 'library-card-title';
+      title.textContent = list.title || 'Untitled checklist';
+      const arrow = document.createElement('span');
+      arrow.className = 'library-card-arrow';
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = '↗';
+      top.append(title, arrow);
+      button.append(top);
+      if (list.id === state.activeListId) {
+        const lastOpened = document.createElement('span');
+        lastOpened.className = 'last-opened';
+        lastOpened.textContent = 'Last opened';
+        button.append(lastOpened);
+      }
+      const done = list.tasks.filter(task => task.done).length;
+      const meta = document.createElement('span');
+      meta.className = 'library-card-meta';
+      meta.textContent = `${list.tasks.length} ${list.tasks.length === 1 ? 'item' : 'items'} · ${done} done`;
+      const progress = document.createElement('span');
+      progress.className = 'library-card-progress';
+      progress.setAttribute('aria-hidden', 'true');
+      const fill = document.createElement('span');
+      fill.style.width = `${list.tasks.length ? Math.round(done / list.tasks.length * 100) : 0}%`;
+      progress.append(fill);
+      button.append(meta, progress);
+      return button;
+    });
+    if (!cards.length) {
+      const empty = document.createElement('div');
+      empty.className = 'library-empty';
+      const message = document.createElement('p');
+      message.textContent = 'No checklists yet. Create one to get started.';
+      const create = document.createElement('button');
+      create.type = 'button';
+      create.textContent = 'Create a checklist';
+      create.addEventListener('click', openCreateSheet);
+      empty.append(message, create);
+      cards.push(empty);
+    }
+    $('libraryLists').replaceChildren(...cards);
   };
   const render = () => {
     const list = activeList();
-    $('currentListName').textContent = list.title || 'Untitled checklist';
+    const isChecklist = currentPage === 'checklist';
+    document.body.classList.toggle('is-library', !isChecklist);
+    document.body.classList.toggle('is-checklist', isChecklist);
+    $('libraryScreen').hidden = isChecklist;
+    $('checklistScreen').hidden = !isChecklist;
+    $('brandTitle').textContent = isChecklist ? (list.title || 'Untitled checklist') : 'My Checklist';
+    renderLibrary();
     $('listHeading').textContent = list.title || 'Untitled checklist';
-    $('sidebarLists').replaceChildren(...state.lists.map(item => makeListButton(item, item.id === list.id)));
-    $('listSearch').hidden = state.lists.length <= 6;
-    renderChoices();
+    if ($('notes').value !== list.notes) $('notes').value = list.notes;
     const done = list.tasks.filter(task => task.done).length;
     $('count').textContent = `${list.tasks.length} ${list.tasks.length === 1 ? 'item' : 'items'} · ${done} done`;
     const rows = list.tasks.map((task, index) => {
@@ -381,16 +453,39 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
       touchStart = undefined;
     }, {passive: true});
   };
-  ['listSheet', 'createSheet', 'renameSheet', 'notesSheet'].forEach(id => closeDialogFromBackdrop($(id)));
+  ['createSheet', 'renameSheet'].forEach(id => closeDialogFromBackdrop($(id)));
   document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => $(button.dataset.close).close()));
 
-  $('openLists').addEventListener('click', () => showDialog('listSheet'));
-  $('listSearch').addEventListener('input', renderChoices);
-  $('sidebarNew').addEventListener('click', openCreateSheet);
-  $('sheetNew').addEventListener('click', () => {
-    $('listSheet').close();
-    openCreateSheet();
+  $('libraryNew').addEventListener('click', openCreateSheet);
+  $('topBackButton').addEventListener('click', goBack);
+  $('editTitleButton').addEventListener('click', () => {
+    $('renameName').value = activeList().title;
+    showDialog('renameSheet', 'renameName');
   });
+  $('exportBtn').addEventListener('click', () => exportBackup());
+  $('shareBtn').addEventListener('click', () => shareChecklist());
+  $('importBtn').addEventListener('click', () => $('fileInput').click());
+  window.addEventListener('popstate', event => {
+    currentPage = event.state?.checklist ? 'checklist' : 'library';
+    render();
+  });
+  let swipeStart;
+  $('checklistScreen').addEventListener('touchstart', event => {
+    if (event.target.closest('button,input,textarea')) {
+      swipeStart = null;
+      return;
+    }
+    const touch = event.changedTouches[0];
+    swipeStart = {x: touch.clientX, y: touch.clientY};
+  }, {passive: true});
+  $('checklistScreen').addEventListener('touchend', event => {
+    if (!swipeStart) return;
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - swipeStart.x;
+    const deltaY = Math.abs(touch.clientY - swipeStart.y);
+    swipeStart = null;
+    if (deltaX > 100 && deltaX > deltaY + 30) goBack();
+  }, {passive: true});
   $('createForm').addEventListener('submit', event => {
     event.preventDefault();
     const input = $('createName');
@@ -404,10 +499,9 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
     input.setCustomValidity('');
     const list = {id: makeId(), title, tasks: [], notes: ''};
     state.lists.push(list);
-    state.activeListId = list.id;
     $('createSheet').close();
     input.value = '';
-    save();
+    openChecklist(list.id);
     $('newTask').focus();
   });
   $('createName').addEventListener('input', event => event.target.setCustomValidity(''));
@@ -425,10 +519,8 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
     save();
   });
   $('renameName').addEventListener('input', event => event.target.setCustomValidity(''));
-  $('notesForm').addEventListener('submit', event => {
-    event.preventDefault();
-    activeList().notes = $('notes').value;
-    $('notesSheet').close();
+  $('notes').addEventListener('input', event => {
+    activeList().notes = event.target.value;
     save();
   });
   $('addForm').addEventListener('submit', event => {
@@ -481,6 +573,8 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
     const index = state.lists.indexOf(list);
     state.lists.splice(index, 1);
     state.activeListId = state.lists[Math.max(0, index - 1)].id;
+    currentPage = 'library';
+    history.replaceState({}, '');
     save();
   };
   $('overflowMenu').addEventListener('click', event => {
@@ -488,27 +582,10 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
     if (!button) return;
     $('overflowMenu').open = false;
     switch (button.dataset.action) {
-      case 'rename':
-        $('renameName').value = activeList().title;
-        showDialog('renameSheet', 'renameName');
-        break;
-      case 'notes':
-        $('notes').value = activeList().notes;
-        showDialog('notesSheet', 'notes');
-        break;
       case 'clear':
         activeList().tasks.forEach(task => { task.done = false; });
         save();
         toast('All ticks cleared.');
-        break;
-      case 'export':
-        exportBackup();
-        break;
-      case 'share':
-        shareChecklist();
-        break;
-      case 'import':
-        $('fileInput').click();
         break;
       case 'delete':
         deleteChecklist();

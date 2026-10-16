@@ -38,6 +38,20 @@ $('listSelect').addEventListener('change',e=>{state.activeListId=e.target.value;
 $('listTitle').addEventListener('input',e=>{activeList().title=e.target.value;const selected=$('listSelect').selectedOptions[0];if(selected)selected.textContent=e.target.value||'Untitled list';try{localStorage.setItem(KEY,JSON.stringify(state))}catch(_){toast('Could not save. Export a backup.')}});$('notes').addEventListener('input',e=>{activeList().notes=e.target.value;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(_){toast('Could not save. Export a backup.')}});
 const add=()=>{const input=$('newTask'),text=input.value.trim();if(!text)return;activeList().tasks.push({text,done:false});input.value='';save();input.focus()};$('addBtn').addEventListener('click',add);$('newTask').addEventListener('keydown',e=>{if(e.key==='Enter')add()});$('clearBtn').addEventListener('click',()=>{activeList().tasks.forEach(t=>t.done=false);save();toast('All ticks cleared.')});
 $('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='my-checklist-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Backup exported. Keep it somewhere safe.')});$('shareBtn').addEventListener('click',async()=>{const bytes=new TextEncoder().encode(JSON.stringify(state));let binary='';for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));const encoded=btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');const url=new URL(location.href);url.hash='share='+encoded;try{if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');await navigator.clipboard.writeText(url.href);toast('Share URL copied. Anyone with the link can view this checklist.')}catch(_){if(window.prompt('Copy this share URL:',url.href)===null)toast('Share URL was not copied.');else toast('Share URL ready to paste. Anyone with the link can view this checklist.')}});$('importBtn').addEventListener('click',()=>$('fileInput').click());$('fileInput').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const d=JSON.parse(await file.text());state=normalizeState(d);save();toast('Backup imported.')}catch(_){toast('That file is not a valid checklist backup.')}e.target.value=''});render();if(sharedLoadError)toast('This share URL is invalid or damaged.');
-if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>toast('Offline setup did not register; check hosting settings.')));
+if('serviceWorker'in navigator){
+const hadController=!!navigator.serviceWorker.controller;let reloading=false;
+navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController&&!reloading){reloading=true;location.reload()}});
+navigator.serviceWorker.addEventListener('message',event=>{if(event.data?.type==='APP_UPDATE_AVAILABLE'&&!reloading){reloading=true;location.reload()}});
+window.addEventListener('load',async()=>{
+try{
+const registration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});
+const checkForUpdates=()=>{
+registration.update().catch(()=>{if(navigator.onLine)toast('Could not check for updates.')});
+registration.active?.postMessage('CHECK_FOR_UPDATES');
+};
+checkForUpdates();window.addEventListener('focus',checkForUpdates);window.addEventListener('online',checkForUpdates);setInterval(checkForUpdates,15*60*1000);
+}catch(_){toast('Offline setup did not register; check hosting settings.')}
+});
+}
 })();
 </script></body></html>

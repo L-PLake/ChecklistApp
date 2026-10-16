@@ -55,6 +55,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .checklist-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:15px 0 22px}
 .title-edit-row{display:flex;align-items:center;gap:9px;min-width:0}
 .title-edit-row h1{min-width:0}
+.list-icon-button{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border:0;border-radius:12px;background:var(--accent-soft);font-size:22px}
+.list-icon-button:hover{background:#dce9df}
 .edit-title-button{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;margin-top:4px;border:0;border-radius:10px;background:transparent;color:#818a81}
 .edit-title-button:hover{background:var(--accent-soft);color:var(--accent)}
 .edit-title-button svg{width:18px;height:18px}
@@ -109,7 +111,12 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
 .form-sheet .sheet-heading{margin-bottom:7px}
 .dialog-hint{margin:0 0 18px;color:var(--muted);font-size:14px}
 .dialog-form label{display:block;margin-bottom:7px;font-size:13px;font-weight:700}
+.icon-picker-label{margin:0 0 7px;font-size:13px;font-weight:700}
 .dialog-form textarea{min-height:130px;resize:vertical}
+.icon-picker{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:0 0 16px}
+.icon-option{display:grid;place-items:center;aspect-ratio:1;padding:0;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:23px}
+.icon-option:hover{border-color:#c7d5ca;background:#fbfcfa}
+.icon-option[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
 .dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:17px}
 .dialog-actions button{padding:10px 15px;border:0;border-radius:10px;font-weight:700}
 .cancel-button{background:#f1f0eb;color:#566057}
@@ -129,7 +136,8 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
 .library-card{display:flex;flex-direction:column;min-height:150px;padding:19px;border:1px solid var(--line);border-radius:17px;background:#fff;color:var(--text);text-align:left;transition:border-color .15s,transform .15s,box-shadow .15s}
 .library-card:hover{transform:translateY(-2px);border-color:#c7d5ca;box-shadow:0 10px 28px rgba(32,45,38,.07)}
 .library-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.library-card-title{font-size:17px;font-weight:730;letter-spacing:-.02em;overflow-wrap:anywhere}
+.library-card-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:12px;background:var(--accent-soft);font-size:21px}
+.library-card-title{flex:1;font-size:17px;font-weight:730;letter-spacing:-.02em;overflow-wrap:anywhere}
 .library-card-arrow{color:#9aa199;font-size:20px;line-height:1}
 .library-card-meta{margin-top:auto;padding-top:21px;color:var(--muted);font-size:13px}
 .library-card-progress{height:4px;margin-top:9px;border-radius:5px;background:#eeeee9;overflow:hidden}
@@ -215,7 +223,7 @@ body.is-checklist .overflow{display:block}
     <section class="checklist-content" id="checklistScreen" aria-label="Current checklist" hidden>
       <div class="workspace-inner">
         <div class="checklist-heading">
-          <div><p class="eyebrow">YOUR CHECKLIST</p><div class="title-edit-row"><h1 id="listHeading">My list</h1><button class="edit-title-button" id="editTitleButton" type="button" aria-label="Edit checklist name" title="Edit checklist name"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m12.2 4.2 3.6 3.6M4 16l3.7-.8 8.5-8.5a1.8 1.8 0 0 0-2.6-2.6l-8.5 8.5L4 16Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div>
+          <div><p class="eyebrow">YOUR CHECKLIST</p><div class="title-edit-row"><button class="list-icon-button" id="editIconButton" type="button" aria-label="Change checklist icon" title="Change checklist icon">📋</button><h1 id="listHeading">My list</h1><button class="edit-title-button" id="editTitleButton" type="button" aria-label="Edit checklist name" title="Edit checklist name"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m12.2 4.2 3.6 3.6M4 16l3.7-.8 8.5-8.5a1.8 1.8 0 0 0-2.6-2.6l-8.5 8.5L4 16Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div>
           <span class="count" id="count">0 items</span>
         </div>
         <div class="checklist-notes">
@@ -242,6 +250,8 @@ body.is-checklist .overflow{display:block}
     <form class="dialog-form" id="createForm">
       <label for="createName">Checklist name</label>
       <input id="createName" maxlength="80" autocomplete="off" placeholder="e.g. Weekend trip" required>
+      <p class="icon-picker-label">Choose an icon</p>
+      <div class="icon-picker" id="createIconPicker" role="group" aria-label="Choose a checklist icon"></div>
       <div class="dialog-actions"><button class="cancel-button" type="button" data-close="createSheet">Cancel</button><button class="create-button" type="submit">Create</button></div>
     </form>
   </div>
@@ -249,11 +259,13 @@ body.is-checklist .overflow{display:block}
 <dialog class="form-sheet" id="renameSheet" aria-labelledby="renameTitle">
   <div class="sheet-content">
     <div class="sheet-handle" aria-hidden="true"></div>
-    <div class="sheet-heading"><h2 id="renameTitle">Rename checklist</h2><button class="sheet-close" type="button" data-close="renameSheet" aria-label="Close rename form">×</button></div>
+    <div class="sheet-heading"><h2 id="renameTitle">Edit checklist</h2><button class="sheet-close" type="button" data-close="renameSheet" aria-label="Close edit form">×</button></div>
     <form class="dialog-form" id="renameForm">
       <label for="renameName">Checklist name</label>
       <input id="renameName" maxlength="80" autocomplete="off" required>
-      <div class="dialog-actions"><button class="cancel-button" type="button" data-close="renameSheet">Cancel</button><button class="create-button" type="submit">Save name</button></div>
+      <p class="icon-picker-label">Choose an icon</p>
+      <div class="icon-picker" id="renameIconPicker" role="group" aria-label="Choose a checklist icon"></div>
+      <div class="dialog-actions"><button class="cancel-button" type="button" data-close="renameSheet">Cancel</button><button class="create-button" type="submit">Save changes</button></div>
     </form>
   </div>
 </dialog>
@@ -263,14 +275,17 @@ body.is-checklist .overflow{display:block}
 (() => {
   const KEY = 'my-offline-checklist-v1';
   const $ = id => document.getElementById(id);
+  const DEFAULT_ICON = '📋';
+  const LIST_ICONS = ['📋', '✈️', '🎒', '🧳', '🏕️', '🏠', '🛒', '🍽️', '⭐', '🎯', '📚', '💼'];
   const makeId = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const normalizeList = (list, index) => ({
     id: typeof list.id === 'string' && list.id ? list.id : `list-${index}-${makeId()}`,
     title: String(list.title || 'My list'),
+    icon: LIST_ICONS.includes(list.icon) ? list.icon : DEFAULT_ICON,
     tasks: Array.isArray(list.tasks) ? list.tasks.map(task => ({text: String(task?.text || ''), done: !!task?.done})).filter(task => task.text) : [],
     notes: String(list.notes || '')
   });
-  const createInitial = () => ({lists: [{id: makeId(), title: 'My list', tasks: [], notes: ''}], activeListId: ''});
+  const createInitial = () => ({lists: [{id: makeId(), title: 'My list', icon: DEFAULT_ICON, tasks: [], notes: ''}], activeListId: ''});
   let state = createInitial();
   const normalizeState = data => {
     if (Array.isArray(data.lists)) {
@@ -340,6 +355,10 @@ body.is-checklist .overflow{display:block}
       button.addEventListener('click', () => openChecklist(list.id));
       const top = document.createElement('span');
       top.className = 'library-card-top';
+      const icon = document.createElement('span');
+      icon.className = 'library-card-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = list.icon;
       const title = document.createElement('span');
       title.className = 'library-card-title';
       title.textContent = list.title || 'Untitled checklist';
@@ -347,7 +366,7 @@ body.is-checklist .overflow{display:block}
       arrow.className = 'library-card-arrow';
       arrow.setAttribute('aria-hidden', 'true');
       arrow.textContent = '↗';
-      top.append(title, arrow);
+      top.append(icon, title, arrow);
       button.append(top);
       if (list.id === state.activeListId) {
         const lastOpened = document.createElement('span');
@@ -391,6 +410,8 @@ body.is-checklist .overflow{display:block}
     $('checklistScreen').hidden = !isChecklist;
     $('brandTitle').textContent = isChecklist ? (list.title || 'Untitled checklist') : 'My Checklist';
     renderLibrary();
+    $('editIconButton').textContent = list.icon;
+    $('editIconButton').setAttribute('aria-label', `Change checklist icon, current icon ${list.icon}`);
     $('listHeading').textContent = list.title || 'Untitled checklist';
     if ($('notes').value !== list.notes) $('notes').value = list.notes;
     const done = list.tasks.filter(task => task.done).length;
@@ -435,9 +456,24 @@ body.is-checklist .overflow{display:block}
     if (!dialog.open) dialog.showModal();
     if (focusId) $(focusId).focus();
   };
+  const renderIconPicker = (pickerId, selectedIcon) => {
+    const picker = $(pickerId);
+    picker.dataset.selectedIcon = selectedIcon;
+    picker.replaceChildren(...LIST_ICONS.map(icon => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'icon-option';
+      button.dataset.icon = icon;
+      button.textContent = icon;
+      button.setAttribute('aria-label', `Select ${icon} icon`);
+      button.setAttribute('aria-pressed', String(icon === selectedIcon));
+      return button;
+    }));
+  };
   const openCreateSheet = () => {
     $('createName').value = '';
     $('createName').setCustomValidity('');
+    renderIconPicker('createIconPicker', DEFAULT_ICON);
     showDialog('createSheet', 'createName');
   };
   const closeDialogFromBackdrop = dialog => {
@@ -454,13 +490,30 @@ body.is-checklist .overflow{display:block}
     }, {passive: true});
   };
   ['createSheet', 'renameSheet'].forEach(id => closeDialogFromBackdrop($(id)));
+  document.querySelectorAll('.icon-picker').forEach(picker => {
+    picker.addEventListener('click', event => {
+      const button = event.target.closest('[data-icon]');
+      if (!button || !picker.contains(button)) return;
+      picker.dataset.selectedIcon = button.dataset.icon;
+      picker.querySelectorAll('[data-icon]').forEach(option => option.setAttribute('aria-pressed', String(option === button)));
+    });
+  });
   document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => $(button.dataset.close).close()));
 
   $('libraryNew').addEventListener('click', openCreateSheet);
   $('topBackButton').addEventListener('click', goBack);
   $('editTitleButton').addEventListener('click', () => {
     $('renameName').value = activeList().title;
+    $('renameName').setCustomValidity('');
+    renderIconPicker('renameIconPicker', activeList().icon);
     showDialog('renameSheet', 'renameName');
+  });
+  $('editIconButton').addEventListener('click', () => {
+    $('renameName').value = activeList().title;
+    $('renameName').setCustomValidity('');
+    renderIconPicker('renameIconPicker', activeList().icon);
+    showDialog('renameSheet');
+    $('renameIconPicker').querySelector('button')?.focus();
   });
   $('exportBtn').addEventListener('click', () => exportBackup());
   $('shareBtn').addEventListener('click', () => shareChecklist());
@@ -497,7 +550,7 @@ body.is-checklist .overflow{display:block}
       return;
     }
     input.setCustomValidity('');
-    const list = {id: makeId(), title, tasks: [], notes: ''};
+    const list = {id: makeId(), title, icon: $('createIconPicker').dataset.selectedIcon || DEFAULT_ICON, tasks: [], notes: ''};
     state.lists.push(list);
     $('createSheet').close();
     input.value = '';
@@ -515,6 +568,7 @@ body.is-checklist .overflow{display:block}
       return;
     }
     activeList().title = title;
+    activeList().icon = $('renameIconPicker').dataset.selectedIcon || DEFAULT_ICON;
     $('renameSheet').close();
     save();
   });

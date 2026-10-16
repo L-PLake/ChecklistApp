@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#315d4b">
+<meta name="theme-color" content="#f5f3ee">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My Checklist">
@@ -11,47 +11,559 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>My Checklist</title>
 <style>
-:root{color-scheme:light dark;--bg:light-dark(#f6f5f1,#151515);--panel:light-dark(#fff,#222);--text:light-dark(#222,#f5f5f5);--muted:light-dark(#77756f,#aaa8a2);--line:light-dark(#e5e2db,#3a3a3a);--accent:light-dark(#315d4b,#9ac8af);--soft:light-dark(#eaf1ec,#263b30)}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{width:min(100%,680px);margin:0 auto;padding:max(28px,env(safe-area-inset-top)) 18px max(32px,env(safe-area-inset-bottom))}header{margin:8px 0 24px}.eyebrow{color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:700}h1{margin:7px 0 4px;font-size:clamp(30px,8vw,42px);line-height:1.05;letter-spacing:-.04em}.sub{color:var(--muted);margin:0}.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0}label{display:block;font-size:13px;font-weight:650;margin:0 0 7px}input,textarea,select{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:12px 13px;width:100%;outline-offset:2px}textarea{resize:vertical;min-height:88px}button{font:inherit;cursor:pointer;border:0;border-radius:11px;padding:12px 15px;font-weight:650}.primary{background:var(--accent);color:light-dark(#fff,#17251d)}.secondary{background:var(--soft);color:var(--text)}.ghost{background:transparent;color:var(--muted);padding:8px 10px}.formrow{display:flex;gap:8px;margin-top:10px}.formrow input{min-width:0}.formrow button{flex-shrink:0}.sectionhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:24px 2px 10px}.sectionhead h2{margin:0;font-size:18px}.count{color:var(--muted);font-size:13px}.task{display:flex;align-items:flex-start;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line)}.task:last-child{border-bottom:0}.task input[type=checkbox]{appearance:none;flex:0 0 23px;width:23px;height:23px;border:1.7px solid var(--muted);border-radius:7px;margin:1px 0 0;padding:0;background:transparent}.task input[type=checkbox]:checked{background:var(--accent);border-color:var(--accent);position:relative}.task input[type=checkbox]:checked::after{content:'✓';display:block;color:white;font-size:16px;line-height:21px;text-align:center;font-weight:800}.task span{flex:1;overflow-wrap:anywhere}.task.done span{color:var(--muted);text-decoration:line-through}.task .remove{padding:2px 6px;color:var(--muted);background:transparent;font-size:20px;line-height:1}.empty{color:var(--muted);padding:22px 4px;text-align:center}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.note{font-size:12px;color:var(--muted);margin:12px 2px}#toast{min-height:20px;color:var(--accent);font-size:13px;margin-top:8px}
+:root{color-scheme:light;--bg:#f5f3ee;--panel:#fff;--text:#222d26;--muted:#858b83;--line:#e8e7df;--accent:#315d4b;--accent-soft:#eaf1ec;--shadow:0 24px 70px rgba(32,45,38,.18)}
+*{box-sizing:border-box}
+body{margin:0;min-width:320px;min-height:100vh;background:var(--bg);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,textarea{font:inherit}
+button{color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #86ae97;outline-offset:3px}
+.app-shell{min-height:100vh}
+.topbar{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 34px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.78)}
+.brand{display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;font-size:17px;font-weight:750;letter-spacing:-.025em}
+.brand-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--accent);color:#fff}
+.brand-mark svg{width:19px;height:19px}
+.overflow{position:relative}
+.overflow summary{list-style:none;display:grid;place-items:center;width:40px;height:40px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer}
+.overflow summary::-webkit-details-marker{display:none}
+.overflow summary svg{width:18px;height:18px}
+.overflow-menu{position:absolute;z-index:4;right:0;top:48px;width:224px;padding:7px;border:1px solid var(--line);border-radius:15px;background:#fff;box-shadow:var(--shadow)}
+.overflow-menu button{display:block;width:100%;padding:10px 11px;border:0;border-radius:9px;background:transparent;text-align:left;font-size:14px}
+.overflow-menu button:hover{background:var(--bg)}
+.overflow-menu .danger{color:#a84236}
+.app-layout{display:flex;min-height:calc(100vh - 76px)}
+.sidebar{width:278px;flex:0 0 278px;display:flex;flex-direction:column;padding:30px 18px 22px 24px;border-right:1px solid var(--line);background:#fbfaf7}
+.sidebar-label{margin:0 0 12px 10px;color:var(--muted);font-size:11px;font-weight:750;letter-spacing:.12em;text-transform:uppercase}
+.sidebar-lists{display:grid;gap:4px}
+.list-choice{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border:0;border-radius:11px;background:transparent;color:#606960;text-align:left}
+.list-choice:hover{background:#f0efe9}
+.list-choice.is-current{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.list-choice .list-icon{width:17px;height:17px;flex:0 0 17px;color:#8a938b}
+.list-choice.is-current .list-icon{color:var(--accent)}
+.list-choice .list-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.current-check{font-size:14px;font-weight:800}
+.sidebar-new{display:flex;align-items:center;gap:9px;margin-top:auto;padding:12px;border:0;border-radius:11px;background:transparent;color:var(--accent);font-weight:700;text-align:left}
+.sidebar-new:hover{background:var(--accent-soft)}
+.sidebar-new span{font-size:21px;line-height:1}
+.workspace{flex:1;min-width:0;padding:35px 30px 60px}
+.workspace-inner{width:min(100%,740px);margin:0 auto}
+.mobile-list-picker{display:none}
+.checklist-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:15px 0 22px}
+.eyebrow{margin:0 0 6px;color:var(--muted);font-size:11px;font-weight:750;letter-spacing:.13em}
+h1{margin:0;font-size:clamp(28px,4vw,38px);line-height:1.12;letter-spacing:-.045em;overflow-wrap:anywhere}
+.count{padding-bottom:4px;color:var(--muted);font-size:13px;white-space:nowrap}
+.task-list{padding:6px 0;border-top:1px solid var(--line)}
+.task{display:flex;align-items:center;gap:15px;min-height:60px;padding:13px 4px;border-bottom:1px solid var(--line)}
+.task:last-child{border-bottom:0}
+.task input[type=checkbox]{appearance:none;flex:0 0 22px;width:22px;height:22px;margin:0;border:1.7px solid #b4b9b1;border-radius:7px;background:#fff;cursor:pointer}
+.task input[type=checkbox]:checked{border-color:var(--accent);background:var(--accent)}
+.task input[type=checkbox]:checked::after{content:"✓";display:block;color:#fff;font-size:15px;line-height:19px;text-align:center;font-weight:800}
+.task-text{flex:1;min-width:0;overflow-wrap:anywhere;font-size:16px}
+.task.done .task-text{color:#999f98;text-decoration:line-through}
+.task-remove{width:32px;height:32px;border:0;border-radius:9px;background:transparent;color:#a1a69f;font-size:21px;line-height:1}
+.task-remove:hover{background:#f1efea;color:#676f67}
+.empty{padding:35px 8px;color:var(--muted);text-align:center}
+.empty-mark{display:grid;place-items:center;width:42px;height:42px;margin:0 auto 12px;border-radius:14px;background:var(--accent-soft);color:var(--accent);font-size:20px}
+.empty p{margin:0}
+.add-form{display:flex;gap:10px;margin-top:15px}
+.add-form input,.dialog-form input,.dialog-form textarea,.selector-search{min-width:0;width:100%;padding:13px 15px;border:1px solid #dedfd8;border-radius:12px;background:#fff;color:var(--text)}
+.add-form input::placeholder{color:#a0a59e}
+.add-form input:focus,.dialog-form input:focus,.dialog-form textarea:focus,.selector-search:focus{border-color:#8aa995;outline:3px solid rgba(134,174,151,.2)}
+.add-button{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:0 17px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-weight:700}
+.add-button:hover{background:#264c3b}
+.add-button span{font-size:19px}
+#toast{min-height:22px;margin-top:10px;color:var(--accent);font-size:13px}
+dialog{color:var(--text)}
+dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
+.sheet{position:fixed;inset:auto 0 0;margin:0;width:100%;max-width:none;max-height:min(84dvh,740px);padding:0;border:0;border-radius:23px 23px 0 0;background:#fff;box-shadow:var(--shadow);overflow:auto}
+.sheet-content{padding:13px 22px max(24px,env(safe-area-inset-bottom))}
+.sheet-handle{width:38px;height:4px;margin:0 auto 17px;border-radius:4px;background:#dedfd9}
+.sheet-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px}
+.sheet-heading h2{margin:0;font-size:19px;letter-spacing:-.02em}
+.sheet-close{width:34px;height:34px;border:0;border-radius:10px;background:#f3f2ee;color:#687168;font-size:20px;line-height:1}
+.selector-search{margin-bottom:10px}
+.sheet-list{display:grid;gap:4px;max-height:48dvh;overflow:auto}
+.sheet-list .list-choice{padding:13px 12px}
+.sheet-divider{height:1px;margin:12px 0;background:var(--line)}
+.sheet-new{width:100%;display:flex;align-items:center;gap:10px;padding:13px 12px;border:0;border-radius:11px;background:transparent;color:var(--accent);font-weight:750;text-align:left}
+.sheet-new:hover{background:var(--accent-soft)}
+.sheet-new span{font-size:21px;line-height:1}
+.form-sheet{width:min(100% - 32px,440px);padding:0;border:0;border-radius:20px;background:#fff;box-shadow:var(--shadow)}
+.form-sheet .sheet-content{padding:24px}
+.form-sheet .sheet-handle{display:none}
+.form-sheet .sheet-heading{margin-bottom:7px}
+.dialog-hint{margin:0 0 18px;color:var(--muted);font-size:14px}
+.dialog-form label{display:block;margin-bottom:7px;font-size:13px;font-weight:700}
+.dialog-form textarea{min-height:130px;resize:vertical}
+.dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:17px}
+.dialog-actions button{padding:10px 15px;border:0;border-radius:10px;font-weight:700}
+.cancel-button{background:#f1f0eb;color:#566057}
+.create-button{background:var(--accent);color:#fff}
+.notes-sheet{width:min(100% - 32px,520px)}
+.notes-sheet textarea{min-height:190px}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:760px){
+ .topbar{height:66px;padding:0 20px}
+ .app-layout{min-height:calc(100vh - 66px)}
+ .sidebar{display:none}
+ .workspace{padding:20px 22px max(36px,env(safe-area-inset-bottom))}
+ .mobile-list-picker{display:block;margin-bottom:14px}
+ .mobile-list-picker button{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;padding:0 15px;border:1px solid var(--line);border-radius:14px;background:#fff;text-align:left;font-size:15px;font-weight:700}
+ .mobile-list-picker svg{width:18px;height:18px;color:#798278}
+ .checklist-heading{padding:14px 1px 19px}
+ .count{font-size:12px}
+ .task{min-height:58px}
+ .add-form{gap:8px}
+ .add-form input{padding:12px 13px}
+ .add-button{padding:0 14px}
+ .form-sheet{position:fixed;inset:auto 0 0;margin:0;width:100%;max-width:none;border-radius:23px 23px 0 0}
+ .form-sheet .sheet-content{padding:13px 22px max(25px,env(safe-area-inset-bottom))}
+ .form-sheet .sheet-handle{display:block}
+ .notes-sheet{width:100%}
+}
+@media(min-width:761px){
+ .sheet{border-radius:23px 23px 0 0}
+}
 </style>
 </head>
-<body><main>
-<header><div class="eyebrow">Your own space · no account · offline-ready</div><h1>My Checklist</h1><p class="sub">One thing at a time. Your ticks save on this device.</p></header>
-<section class="panel"><label for="listSelect">Your lists</label><select id="listSelect"></select><div class="formrow"><input id="newList" placeholder="Name a new list" maxlength="80" autocomplete="off"><button class="secondary" id="createListBtn">Create list</button></div><div class="actions"><button class="ghost" id="deleteListBtn">Delete this list</button></div><div style="height:14px"></div><label for="listTitle">List name</label><input id="listTitle" value="My list" maxlength="80" autocomplete="off"><div style="height:14px"></div><label for="newTask">Add something to do</label><div class="formrow"><input id="newTask" placeholder="e.g. Pack charger" maxlength="240" autocomplete="off"><button class="primary" id="addBtn">Add</button></div></section>
-<div class="sectionhead"><h2>Tasks</h2><span class="count" id="count">0 tasks</span></div><section class="panel" id="tasks"><div class="empty">Add your first task above.</div></section>
-<section class="panel"><label for="notes">Notes (optional)</label><textarea id="notes" placeholder="Anything you want to remember…"></textarea><div class="actions"><button class="secondary" id="exportBtn">Export backup</button><button class="secondary" id="shareBtn">Copy share URL</button><button class="secondary" id="importBtn">Import backup</button><button class="ghost" id="clearBtn">Clear ticks</button><input id="fileInput" type="file" accept="application/json,.json" hidden></div><div id="toast" role="status" aria-live="polite"></div></section>
-<p class="note">Your lists stay in this browser on this iPhone. A share URL contains your checklist, so anyone with the link can view it. Export a backup occasionally. After first loading the app online, it can open offline.</p>
-</main><script>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="My Checklist home">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m6 12.5 3.7 3.7L18.5 7.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span>My Checklist</span>
+    </a>
+    <details class="overflow" id="overflowMenu">
+      <summary aria-label="Checklist options"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></summary>
+      <div class="overflow-menu" aria-label="Checklist actions">
+        <button type="button" data-action="rename">Rename checklist</button>
+        <button type="button" data-action="notes">Notes</button>
+        <button type="button" data-action="clear">Clear ticks</button>
+        <button type="button" data-action="export">Export backup</button>
+        <button type="button" data-action="share">Copy share URL</button>
+        <button type="button" data-action="import">Import backup</button>
+        <button type="button" class="danger" data-action="delete">Delete checklist</button>
+      </div>
+    </details>
+  </header>
+  <div class="app-layout">
+    <aside class="sidebar" aria-label="Checklist navigation">
+      <p class="sidebar-label">Your checklists</p>
+      <nav class="sidebar-lists" id="sidebarLists" aria-label="Checklists"></nav>
+      <button class="sidebar-new" id="sidebarNew" type="button"><span aria-hidden="true">+</span> New checklist</button>
+    </aside>
+    <main class="workspace">
+      <div class="workspace-inner">
+        <div class="mobile-list-picker">
+          <button id="openLists" type="button" aria-haspopup="dialog" aria-controls="listSheet">
+            <span id="currentListName">My list</span>
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <section class="checklist-content" aria-label="Current checklist">
+          <div class="checklist-heading">
+            <div><p class="eyebrow">YOUR CHECKLIST</p><h1 id="listHeading">My list</h1></div>
+            <span class="count" id="count">0 items</span>
+          </div>
+          <div class="task-list" id="tasks" aria-live="polite"></div>
+          <form class="add-form" id="addForm">
+            <label class="visually-hidden" for="newTask">Add an item</label>
+            <input id="newTask" placeholder="Add an item..." maxlength="240" autocomplete="off">
+            <button class="add-button" type="submit"><span aria-hidden="true">+</span> Add item</button>
+          </form>
+          <div id="toast" role="status" aria-live="polite"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+<dialog class="sheet" id="listSheet" aria-labelledby="listSheetTitle">
+  <div class="sheet-content">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-heading"><h2 id="listSheetTitle">Your checklists</h2><button class="sheet-close" type="button" data-close="listSheet" aria-label="Close checklist selector">×</button></div>
+    <input class="selector-search" id="listSearch" type="search" placeholder="Search checklists" aria-label="Search checklists" hidden>
+    <nav class="sheet-list" id="sheetLists" aria-label="Checklists"></nav>
+    <div class="sheet-divider"></div>
+    <button class="sheet-new" id="sheetNew" type="button"><span aria-hidden="true">+</span> Create new checklist</button>
+  </div>
+</dialog>
+<dialog class="form-sheet" id="createSheet" aria-labelledby="createTitle">
+  <div class="sheet-content">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-heading"><h2 id="createTitle">New checklist</h2><button class="sheet-close" type="button" data-close="createSheet" aria-label="Close new checklist form">×</button></div>
+    <p class="dialog-hint">Give your checklist a name to get started.</p>
+    <form class="dialog-form" id="createForm">
+      <label for="createName">Checklist name</label>
+      <input id="createName" maxlength="80" autocomplete="off" placeholder="e.g. Weekend trip" required>
+      <div class="dialog-actions"><button class="cancel-button" type="button" data-close="createSheet">Cancel</button><button class="create-button" type="submit">Create</button></div>
+    </form>
+  </div>
+</dialog>
+<dialog class="form-sheet" id="renameSheet" aria-labelledby="renameTitle">
+  <div class="sheet-content">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-heading"><h2 id="renameTitle">Rename checklist</h2><button class="sheet-close" type="button" data-close="renameSheet" aria-label="Close rename form">×</button></div>
+    <form class="dialog-form" id="renameForm">
+      <label for="renameName">Checklist name</label>
+      <input id="renameName" maxlength="80" autocomplete="off" required>
+      <div class="dialog-actions"><button class="cancel-button" type="button" data-close="renameSheet">Cancel</button><button class="create-button" type="submit">Save name</button></div>
+    </form>
+  </div>
+</dialog>
+<dialog class="form-sheet notes-sheet" id="notesSheet" aria-labelledby="notesTitle">
+  <div class="sheet-content">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-heading"><h2 id="notesTitle">Checklist notes</h2><button class="sheet-close" type="button" data-close="notesSheet" aria-label="Close notes">×</button></div>
+    <form class="dialog-form" id="notesForm">
+      <label for="notes">Notes</label>
+      <textarea id="notes" maxlength="4000" placeholder="Anything you want to remember..."></textarea>
+      <div class="dialog-actions"><button class="cancel-button" type="button" data-close="notesSheet">Cancel</button><button class="create-button" type="submit">Save notes</button></div>
+    </form>
+  </div>
+</dialog>
+<input id="fileInput" type="file" accept="application/json,.json" hidden>
+
+<script>
 (() => {
-const KEY='my-offline-checklist-v1', $=id=>document.getElementById(id),makeId=()=>globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
-const normalizeList=(list,index)=>({id:typeof list.id==='string'&&list.id?list.id:`list-${index}-${makeId()}`,title:String(list.title||'My list'),tasks:Array.isArray(list.tasks)?list.tasks.map(task=>({text:String(task?.text||''),done:!!task?.done})).filter(task=>task.text):[],notes:String(list.notes||'')});
-const createInitial=()=>({lists:[{id:makeId(),title:'My list',tasks:[],notes:''}],activeListId:''});let state=createInitial();
-const normalizeState=data=>{if(Array.isArray(data.lists)){const lists=data.lists.map(normalizeList);if(!lists.length)throw Error('No lists');return{lists,activeListId:lists.some(list=>list.id===data.activeListId)?data.activeListId:lists[0].id}}if(Array.isArray(data.tasks)){const list=normalizeList(data,0);return{lists:[list],activeListId:list.id}}throw Error('Invalid checklist')};
-const sharedData=new URLSearchParams(location.hash.slice(1)).get('share');let sharedLoadError=false;
-if(sharedData!==null){try{const encoded=sharedData.replace(/-/g,'+').replace(/_/g,'/');if(!/^[A-Za-z0-9+/]*$/.test(encoded)||encoded.length%4===1)throw Error('Invalid share URL');const bytes=Uint8Array.from(atob(encoded.padEnd(Math.ceil(encoded.length/4)*4,'=')),character=>character.charCodeAt(0));state=normalizeState(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)))}catch(_){sharedLoadError=true}}
-if(sharedData===null||sharedLoadError){try{const saved=localStorage.getItem(KEY);if(saved)state=normalizeState(JSON.parse(saved))}catch(_){}}
-if(!state.activeListId)state.activeListId=state.lists[0].id;
-const activeList=()=>state.lists.find(list=>list.id===state.activeListId)||state.lists[0];
-const toast=m=>{$('toast').textContent=m};const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(_){toast('Could not save. Export a backup.')}render()};
-const render=()=>{const list=activeList();if($('listTitle').value!==list.title)$('listTitle').value=list.title;if($('notes').value!==list.notes)$('notes').value=list.notes;$('listSelect').replaceChildren(...state.lists.map(item=>{const option=document.createElement('option');option.value=item.id;option.textContent=item.title||'Untitled list';return option}));$('listSelect').value=list.id;$('deleteListBtn').disabled=state.lists.length===1;const done=list.tasks.filter(t=>t.done).length;$('count').textContent=`${done} of ${list.tasks.length} done`;$('tasks').replaceChildren();if(!list.tasks.length){const p=document.createElement('div');p.className='empty';p.textContent='Add your first task above.';$('tasks').append(p);return}list.tasks.forEach((task,index)=>{const row=document.createElement('div');row.className='task'+(task.done?' done':'');const check=document.createElement('input');check.type='checkbox';check.checked=!!task.done;check.setAttribute('aria-label','Mark '+task.text+' complete');check.addEventListener('change',()=>{list.tasks[index].done=check.checked;save()});const span=document.createElement('span');span.textContent=task.text;const remove=document.createElement('button');remove.className='remove';remove.type='button';remove.textContent='×';remove.setAttribute('aria-label','Delete '+task.text);remove.addEventListener('click',()=>{list.tasks.splice(index,1);save()});row.append(check,span,remove);$('tasks').append(row)})};
-$('listSelect').addEventListener('change',e=>{state.activeListId=e.target.value;save()});$('createListBtn').addEventListener('click',()=>{const input=$('newList'),title=input.value.trim();if(!title){input.focus();return}const list={id:makeId(),title,tasks:[],notes:''};state.lists.push(list);state.activeListId=list.id;input.value='';save()});$('newList').addEventListener('keydown',e=>{if(e.key==='Enter')$('createListBtn').click()});$('deleteListBtn').addEventListener('click',()=>{if(state.lists.length===1)return;const list=activeList();if(!confirm(`Delete "${list.title}" and all its tasks?`))return;const index=state.lists.indexOf(list);state.lists.splice(index,1);state.activeListId=state.lists[Math.max(0,index-1)].id;save()});
-$('listTitle').addEventListener('input',e=>{activeList().title=e.target.value;const selected=$('listSelect').selectedOptions[0];if(selected)selected.textContent=e.target.value||'Untitled list';try{localStorage.setItem(KEY,JSON.stringify(state))}catch(_){toast('Could not save. Export a backup.')}});$('notes').addEventListener('input',e=>{activeList().notes=e.target.value;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(_){toast('Could not save. Export a backup.')}});
-const add=()=>{const input=$('newTask'),text=input.value.trim();if(!text)return;activeList().tasks.push({text,done:false});input.value='';save();input.focus()};$('addBtn').addEventListener('click',add);$('newTask').addEventListener('keydown',e=>{if(e.key==='Enter')add()});$('clearBtn').addEventListener('click',()=>{activeList().tasks.forEach(t=>t.done=false);save();toast('All ticks cleared.')});
-$('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='my-checklist-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Backup exported. Keep it somewhere safe.')});$('shareBtn').addEventListener('click',async()=>{const bytes=new TextEncoder().encode(JSON.stringify(state));let binary='';for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));const encoded=btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');const url=new URL(location.href);url.hash='share='+encoded;try{if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');await navigator.clipboard.writeText(url.href);toast('Share URL copied. Anyone with the link can view this checklist.')}catch(_){if(window.prompt('Copy this share URL:',url.href)===null)toast('Share URL was not copied.');else toast('Share URL ready to paste. Anyone with the link can view this checklist.')}});$('importBtn').addEventListener('click',()=>$('fileInput').click());$('fileInput').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const d=JSON.parse(await file.text());state=normalizeState(d);save();toast('Backup imported.')}catch(_){toast('That file is not a valid checklist backup.')}e.target.value=''});render();if(sharedLoadError)toast('This share URL is invalid or damaged.');
-if('serviceWorker'in navigator){
-const hadController=!!navigator.serviceWorker.controller;let reloading=false;
-navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController&&!reloading){reloading=true;location.reload()}});
-navigator.serviceWorker.addEventListener('message',event=>{if(event.data?.type==='APP_UPDATE_AVAILABLE'&&!reloading){reloading=true;location.reload()}});
-window.addEventListener('load',async()=>{
-try{
-const registration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});
-const checkForUpdates=()=>{
-registration.update().catch(()=>{if(navigator.onLine)toast('Could not check for updates.')});
-registration.active?.postMessage('CHECK_FOR_UPDATES');
-};
-checkForUpdates();window.addEventListener('focus',checkForUpdates);window.addEventListener('online',checkForUpdates);setInterval(checkForUpdates,15*60*1000);
-}catch(_){toast('Offline setup did not register; check hosting settings.')}
-});
-}
+  const KEY = 'my-offline-checklist-v1';
+  const $ = id => document.getElementById(id);
+  const makeId = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const normalizeList = (list, index) => ({
+    id: typeof list.id === 'string' && list.id ? list.id : `list-${index}-${makeId()}`,
+    title: String(list.title || 'My list'),
+    tasks: Array.isArray(list.tasks) ? list.tasks.map(task => ({text: String(task?.text || ''), done: !!task?.done})).filter(task => task.text) : [],
+    notes: String(list.notes || '')
+  });
+  const createInitial = () => ({lists: [{id: makeId(), title: 'My list', tasks: [], notes: ''}], activeListId: ''});
+  let state = createInitial();
+  const normalizeState = data => {
+    if (Array.isArray(data.lists)) {
+      const lists = data.lists.map(normalizeList);
+      if (!lists.length) throw Error('No lists');
+      return {lists, activeListId: lists.some(list => list.id === data.activeListId) ? data.activeListId : lists[0].id};
+    }
+    if (Array.isArray(data.tasks)) {
+      const list = normalizeList(data, 0);
+      return {lists: [list], activeListId: list.id};
+    }
+    throw Error('Invalid checklist');
+  };
+
+  const sharedData = new URLSearchParams(location.hash.slice(1)).get('share');
+  let sharedLoadError = false;
+  if (sharedData !== null) {
+    try {
+      const encoded = sharedData.replace(/-/g, '+').replace(/_/g, '/');
+      if (!/^[A-Za-z0-9+/]*$/.test(encoded) || encoded.length % 4 === 1) throw Error('Invalid share URL');
+      const bytes = Uint8Array.from(atob(encoded.padEnd(Math.ceil(encoded.length / 4) * 4, '=')), character => character.charCodeAt(0));
+      state = normalizeState(JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(bytes)));
+    } catch (_) {
+      sharedLoadError = true;
+    }
+  }
+  if (sharedData === null || sharedLoadError) {
+    try {
+      const saved = localStorage.getItem(KEY);
+      if (saved) state = normalizeState(JSON.parse(saved));
+    } catch (_) {}
+  }
+  if (!state.activeListId) state.activeListId = state.lists[0].id;
+
+  const activeList = () => state.lists.find(list => list.id === state.activeListId) || state.lists[0];
+  const toast = message => { $('toast').textContent = message; };
+  const save = () => {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(state));
+    } catch (_) {
+      toast('Could not save. Export a backup.');
+    }
+    render();
+  };
+  const makeListButton = (list, current) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `list-choice${current ? ' is-current' : ''}`;
+    button.setAttribute('aria-current', current ? 'true' : 'false');
+    button.innerHTML = '<svg class="list-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5.5 4.5h9A1.5 1.5 0 0 1 16 6v9a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 4 15V6a1.5 1.5 0 0 1 1.5-1.5Z" stroke="currentColor" stroke-width="1.5"/><path d="M7.2 8h5.6M7.2 11h5.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+    const name = document.createElement('span');
+    name.className = 'list-name';
+    name.textContent = list.title || 'Untitled checklist';
+    button.append(name);
+    if (current) {
+      const check = document.createElement('span');
+      check.className = 'current-check';
+      check.setAttribute('aria-label', 'Current checklist');
+      check.textContent = '✓';
+      button.append(check);
+    }
+    button.addEventListener('click', () => {
+      state.activeListId = list.id;
+      save();
+      $('listSheet').close();
+    });
+    return button;
+  };
+  const renderChoices = () => {
+    const query = $('listSearch').value.trim().toLocaleLowerCase();
+    const matches = state.lists.filter(list => (list.title || 'Untitled checklist').toLocaleLowerCase().includes(query));
+    $('sheetLists').replaceChildren(...matches.map(list => makeListButton(list, list.id === state.activeListId)));
+    if (!matches.length) {
+      const empty = document.createElement('p');
+      empty.className = 'empty';
+      empty.textContent = 'No checklists found.';
+      $('sheetLists').append(empty);
+    }
+  };
+  const render = () => {
+    const list = activeList();
+    $('currentListName').textContent = list.title || 'Untitled checklist';
+    $('listHeading').textContent = list.title || 'Untitled checklist';
+    $('sidebarLists').replaceChildren(...state.lists.map(item => makeListButton(item, item.id === list.id)));
+    $('listSearch').hidden = state.lists.length <= 6;
+    renderChoices();
+    const done = list.tasks.filter(task => task.done).length;
+    $('count').textContent = `${list.tasks.length} ${list.tasks.length === 1 ? 'item' : 'items'} · ${done} done`;
+    const rows = list.tasks.map((task, index) => {
+      const row = document.createElement('div');
+      row.className = `task${task.done ? ' done' : ''}`;
+      const check = document.createElement('input');
+      check.type = 'checkbox';
+      check.checked = !!task.done;
+      check.setAttribute('aria-label', `Mark ${task.text} complete`);
+      check.addEventListener('change', () => {
+        list.tasks[index].done = check.checked;
+        save();
+      });
+      const text = document.createElement('span');
+      text.className = 'task-text';
+      text.textContent = task.text;
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'task-remove';
+      remove.textContent = '×';
+      remove.setAttribute('aria-label', `Delete ${task.text}`);
+      remove.addEventListener('click', () => {
+        list.tasks.splice(index, 1);
+        save();
+      });
+      row.append(check, text, remove);
+      return row;
+    });
+    if (!rows.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.innerHTML = '<span class="empty-mark" aria-hidden="true">✓</span><p>A clear space to start.<br>Add your first item below.</p>';
+      $('tasks').replaceChildren(empty);
+    } else {
+      $('tasks').replaceChildren(...rows);
+    }
+  };
+  const showDialog = (id, focusId) => {
+    const dialog = $(id);
+    if (!dialog.open) dialog.showModal();
+    if (focusId) $(focusId).focus();
+  };
+  const openCreateSheet = () => {
+    $('createName').value = '';
+    $('createName').setCustomValidity('');
+    showDialog('createSheet', 'createName');
+  };
+  const closeDialogFromBackdrop = dialog => {
+    dialog.addEventListener('click', event => {
+      if (event.target === dialog) dialog.close();
+    });
+    let touchStart;
+    dialog.addEventListener('touchstart', event => {
+      touchStart = event.changedTouches[0].clientY;
+    }, {passive: true});
+    dialog.addEventListener('touchend', event => {
+      if (touchStart !== undefined && event.changedTouches[0].clientY - touchStart > 100) dialog.close();
+      touchStart = undefined;
+    }, {passive: true});
+  };
+  ['listSheet', 'createSheet', 'renameSheet', 'notesSheet'].forEach(id => closeDialogFromBackdrop($(id)));
+  document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => $(button.dataset.close).close()));
+
+  $('openLists').addEventListener('click', () => showDialog('listSheet'));
+  $('listSearch').addEventListener('input', renderChoices);
+  $('sidebarNew').addEventListener('click', openCreateSheet);
+  $('sheetNew').addEventListener('click', () => {
+    $('listSheet').close();
+    openCreateSheet();
+  });
+  $('createForm').addEventListener('submit', event => {
+    event.preventDefault();
+    const input = $('createName');
+    const title = input.value.trim();
+    if (!title) {
+      input.setCustomValidity('Enter a checklist name.');
+      input.reportValidity();
+      input.focus();
+      return;
+    }
+    input.setCustomValidity('');
+    const list = {id: makeId(), title, tasks: [], notes: ''};
+    state.lists.push(list);
+    state.activeListId = list.id;
+    $('createSheet').close();
+    input.value = '';
+    save();
+    $('newTask').focus();
+  });
+  $('createName').addEventListener('input', event => event.target.setCustomValidity(''));
+  $('renameForm').addEventListener('submit', event => {
+    event.preventDefault();
+    const title = $('renameName').value.trim();
+    if (!title) {
+      $('renameName').setCustomValidity('Enter a checklist name.');
+      $('renameName').reportValidity();
+      $('renameName').focus();
+      return;
+    }
+    activeList().title = title;
+    $('renameSheet').close();
+    save();
+  });
+  $('renameName').addEventListener('input', event => event.target.setCustomValidity(''));
+  $('notesForm').addEventListener('submit', event => {
+    event.preventDefault();
+    activeList().notes = $('notes').value;
+    $('notesSheet').close();
+    save();
+  });
+  $('addForm').addEventListener('submit', event => {
+    event.preventDefault();
+    const input = $('newTask');
+    const text = input.value.trim();
+    if (!text) {
+      input.focus();
+      return;
+    }
+    activeList().tasks.push({text, done: false});
+    input.value = '';
+    save();
+    input.focus();
+  });
+
+  const exportBackup = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'my-checklist-backup.json';
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast('Backup exported. Keep it somewhere safe.');
+  };
+  const shareChecklist = async () => {
+    const bytes = new TextEncoder().encode(JSON.stringify(state));
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    const encoded = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    const url = new URL(location.href);
+    url.hash = `share=${encoded}`;
+    try {
+      if (!navigator.clipboard?.writeText) throw Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(url.href);
+      toast('Share URL copied. Anyone with the link can view this checklist.');
+    } catch (_) {
+      if (window.prompt('Copy this share URL:', url.href) === null) toast('Share URL was not copied.');
+      else toast('Share URL ready to paste. Anyone with the link can view this checklist.');
+    }
+  };
+  const deleteChecklist = () => {
+    if (state.lists.length === 1) {
+      toast('Keep at least one checklist.');
+      return;
+    }
+    const list = activeList();
+    if (!confirm(`Delete "${list.title}" and all its items?`)) return;
+    const index = state.lists.indexOf(list);
+    state.lists.splice(index, 1);
+    state.activeListId = state.lists[Math.max(0, index - 1)].id;
+    save();
+  };
+  $('overflowMenu').addEventListener('click', event => {
+    const button = event.target.closest('[data-action]');
+    if (!button) return;
+    $('overflowMenu').open = false;
+    switch (button.dataset.action) {
+      case 'rename':
+        $('renameName').value = activeList().title;
+        showDialog('renameSheet', 'renameName');
+        break;
+      case 'notes':
+        $('notes').value = activeList().notes;
+        showDialog('notesSheet', 'notes');
+        break;
+      case 'clear':
+        activeList().tasks.forEach(task => { task.done = false; });
+        save();
+        toast('All ticks cleared.');
+        break;
+      case 'export':
+        exportBackup();
+        break;
+      case 'share':
+        shareChecklist();
+        break;
+      case 'import':
+        $('fileInput').click();
+        break;
+      case 'delete':
+        deleteChecklist();
+        break;
+    }
+  });
+  $('fileInput').addEventListener('change', async event => {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+      state = normalizeState(JSON.parse(await file.text()));
+      save();
+      toast('Backup imported.');
+    } catch (_) {
+      toast('That file is not a valid checklist backup.');
+    }
+    event.target.value = '';
+  });
+
+  render();
+  if (sharedLoadError) toast('This share URL is invalid or damaged.');
+  if ('serviceWorker' in navigator) {
+    const hadController = !!navigator.serviceWorker.controller;
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (hadController && !reloading) {
+        reloading = true;
+        location.reload();
+      }
+    });
+    navigator.serviceWorker.addEventListener('message', event => {
+      if (event.data?.type === 'APP_UPDATE_AVAILABLE' && !reloading) {
+        reloading = true;
+        location.reload();
+      }
+    });
+    window.addEventListener('load', async () => {
+      try {
+        const registration = await navigator.serviceWorker.register('./sw.js', {updateViaCache: 'none'});
+        const checkForUpdates = () => {
+          registration.update().catch(() => {
+            if (navigator.onLine) toast('Could not check for updates.');
+          });
+          registration.active?.postMessage('CHECK_FOR_UPDATES');
+        };
+        checkForUpdates();
+        window.addEventListener('focus', checkForUpdates);
+        window.addEventListener('online', checkForUpdates);
+        setInterval(checkForUpdates, 15 * 60 * 1000);
+      } catch (_) {
+        toast('Offline setup did not register; check hosting settings.');
+      }
+    });
+  }
 })();
-</script></body></html>
+</script>
+</body>
+</html>

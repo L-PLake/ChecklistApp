@@ -19,9 +19,9 @@ body{margin:0;min-width:320px;min-height:100vh;background:var(--bg);color:var(--
 button,input,textarea{font:inherit}
 button{color:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
-.app-shell{display:flex;flex-direction:column;min-height:100vh}
+.app-shell{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
 .topbar{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 34px;border-bottom:1px solid var(--line);background:var(--topbar)}
-.app-footer{padding:0 16px 12px;color:var(--muted);font-size:10px;line-height:1.4;text-align:right;opacity:.55}
+.app-footer{margin-top:auto;padding:0 16px calc(12px + env(safe-area-inset-bottom,0px));color:var(--muted);font-size:10px;line-height:1.4;text-align:right;opacity:.55}
 .brand{display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;font-size:17px;font-weight:750;letter-spacing:-.025em}
 .brand-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--accent);color:var(--accent-text)}
 .brand-mark svg{width:19px;height:19px}

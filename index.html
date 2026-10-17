@@ -303,7 +303,7 @@ body.is-checklist .overflow{display:block}
         <div class="task-list" id="tasks" aria-live="polite"></div>
         <form class="add-form" id="addForm">
           <label class="visually-hidden" for="newTask">Add an item</label>
-          <input id="newTask" placeholder="Add an item..." maxlength="240" autocomplete="off">
+          <input id="newTask" name="task" type="text" placeholder="Add an item..." maxlength="240" autocomplete="off" autocapitalize="sentences" autocorrect="off" spellcheck="false">
           <button class="add-button" type="submit"><span aria-hidden="true">+</span> Add item</button>
         </form>
       </div>

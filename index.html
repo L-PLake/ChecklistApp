@@ -39,6 +39,15 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .overflow-menu button:hover{background:var(--bg)}
 .overflow-menu .danger{color:#a84236}
 .is-library .checklist-action{display:none}
+.share-menu{position:relative}
+.share-menu summary{list-style:none;padding:9px 14px;border:0;border-radius:10px;background:var(--accent);color:var(--accent-text);font-size:13px;font-weight:700;cursor:pointer}
+.share-menu summary::-webkit-details-marker{display:none}
+.share-menu summary:hover{background:var(--accent-hover)}
+.share-menu[open] summary{background:var(--accent-hover)}
+.share-menu-items{position:absolute;z-index:4;right:0;top:calc(100% + 8px);width:224px;padding:7px;border:1px solid var(--line);border-radius:15px;background:var(--panel);box-shadow:var(--shadow)}
+.share-menu-items button{display:block;width:100%;padding:10px 11px;border:0;border-radius:9px;background:transparent;color:var(--text);text-align:left;font-size:14px}
+.share-menu-items button:hover{background:var(--bg)}
+.share-menu-items .danger{color:#a84236}
 .app-layout{display:flex;min-height:calc(100vh - 76px)}
 .sidebar{width:278px;flex:0 0 278px;display:flex;flex-direction:column;padding:30px 18px 22px 24px;border-right:1px solid var(--line);background:var(--panel-subtle)}
 .sidebar-label{margin:0 0 12px 10px;color:var(--muted);font-size:11px;font-weight:750;letter-spacing:.12em;text-transform:uppercase}
@@ -58,14 +67,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .mobile-list-picker{display:none}
 .checklist-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:15px 0 22px}
 .checklist-heading-actions{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:0 0 auto}
-.checklist-action-buttons{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px}
-.checklist-action-button{padding:9px 12px;border:0;border-radius:10px;background:var(--button-subtle);color:var(--text-soft);font-size:13px;font-weight:700}
-.checklist-action-button:hover{background:var(--button-subtle-hover);color:var(--accent)}
-.live-share-buttons{display:flex;gap:7px}
-.live-share-button,.live-unshare-button{padding:9px 12px;border:0;border-radius:10px;background:var(--accent);color:var(--accent-text);font-size:13px;font-weight:700}
-.live-share-button:hover{background:var(--accent-hover)}
-.live-unshare-button{background:var(--button-subtle);color:var(--text-soft)}
-.live-unshare-button:hover{background:var(--button-subtle-hover);color:var(--accent)}
+.checklist-action-row{display:flex;align-items:center;justify-content:flex-end;gap:7px}
 .title-edit-row{display:flex;align-items:center;gap:9px;min-width:0}
 .title-edit-row h1{min-width:0}
 .list-icon-button{display:flex;align-items:center;justify-content:center;flex:0 0 40px;width:40px;height:40px;padding:0;border:0;border-radius:12px;background:transparent;font-size:24px;line-height:1;text-align:center}
@@ -186,10 +188,15 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
 .library-tools{display:flex;align-items:center;justify-content:space-between;gap:22px;margin-top:38px;padding:20px 0;border-top:1px solid var(--line)}
 .library-tools h2{margin:0;font-size:16px;letter-spacing:-.02em}
 .library-tools p{margin:4px 0 0;color:var(--muted);font-size:13px}
-.library-tool-actions{display:flex;flex-wrap:wrap;gap:8px}
-.library-tool-actions button{display:inline-flex;align-items:center;gap:7px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text-soft);font-size:13px;font-weight:650}
-.library-tool-actions button:hover{border-color:var(--border-strong);background:var(--panel-subtle);color:var(--accent)}
-.library-tool-actions svg{width:17px;height:17px}
+.library-tool-actions{display:flex;gap:8px}
+.library-data-menu{position:relative}
+.library-data-menu summary{list-style:none;display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text-soft);font-size:13px;font-weight:650;cursor:pointer}
+.library-data-menu summary::-webkit-details-marker{display:none}
+.library-data-menu summary:hover,.library-data-menu[open] summary{border-color:var(--border-strong);background:var(--panel-subtle);color:var(--accent)}
+.library-data-menu summary svg{width:17px;height:17px}
+.library-data-menu-options{position:absolute;z-index:4;right:0;top:calc(100% + 8px);width:min(260px,calc(100vw - 40px));padding:7px;border:1px solid var(--line);border-radius:15px;background:var(--panel);box-shadow:var(--shadow)}
+.library-data-menu-options button{display:block;width:100%;min-height:42px;padding:10px 11px;border:0;border-radius:9px;background:transparent;color:var(--text-soft);text-align:left;font-size:14px;font-weight:600}
+.library-data-menu-options button:hover{background:var(--bg);color:var(--accent)}
 .checklist-content{width:min(100%,850px);margin:0 auto}
 body.is-checklist .overflow{display:block}
 #toast{position:fixed;z-index:6;left:50%;bottom:max(20px,env(safe-area-inset-bottom));width:max-content;max-width:calc(100% - 32px);padding:9px 14px;border:1px solid var(--line);border-radius:11px;background:var(--panel);box-shadow:0 8px 25px rgba(32,45,38,.12);text-align:center;transform:translateX(-50%)}
@@ -204,11 +211,9 @@ body.is-checklist .overflow{display:block}
  .mobile-list-picker svg{width:18px;height:18px;color:#798278}
  .checklist-heading{padding:14px 1px 19px}
  .checklist-heading{align-items:flex-start;flex-wrap:wrap}
- .checklist-heading-actions{width:100%;align-items:flex-start;flex-direction:column}
- .checklist-heading-actions{gap:5px}
- .checklist-action-buttons{justify-content:flex-start}
+ .checklist-heading-actions{align-items:flex-start;gap:5px}
+ .checklist-action-row{justify-content:flex-start;flex-wrap:wrap}
  .live-share-button,.live-unshare-button{padding:8px 9px;font-size:12px}
- .checklist-action-button{padding:8px 9px;font-size:12px}
  .count{font-size:12px}
  .task{min-height:58px}
  .add-form{gap:8px}
@@ -223,7 +228,8 @@ body.is-checklist .overflow{display:block}
  .library-card{min-height:132px;padding:16px}
  .library-tools{align-items:stretch;flex-direction:column;gap:14px;margin-top:30px;padding-top:17px}
  .library-tool-actions{display:grid;grid-template-columns:1fr}
- .library-tool-actions button{min-height:43px}
+ .library-data-menu summary{width:100%;justify-content:space-between}
+ .library-data-menu-options{width:100%}
  .checklist-content{width:100%}
 }
 @media(min-width:761px){
@@ -256,12 +262,16 @@ body.is-checklist .overflow{display:block}
       </div>
       <div class="library-grid" id="libraryLists" aria-label="All checklists"></div>
       <section class="library-tools" aria-labelledby="dataTitle">
-        <div><h2 id="dataTitle">Your data</h2><p>Export or share all your checklists together.</p></div>
+        <div><h2 id="dataTitle">Your data</h2><p>Import, export, or share all your checklists.</p></div>
         <div class="library-tool-actions">
-          <button type="button" id="exportBtn"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3.5v9m0 0 3.3-3.3M10 12.5 6.7 9.2M4 13v3h12v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Export backup</button>
-          <button type="button" id="shareBtn"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.5 10.5 12.6 7m-5.1 4.5 5.1 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="5.5" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="14.5" cy="5.5" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="14.5" cy="15.5" r="2" stroke="currentColor" stroke-width="1.5"/></svg>Share snapshot of all lists</button>
-          <button type="button" id="importBtn"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.5v-9m0 0L6.7 6.8M10 3.5l3.3 3.3M4 13v3h12v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Import backup</button>
-          <button type="button" id="firebaseTestBtn">Test Firebase connection</button>
+          <details class="library-data-menu" id="libraryDataMenu" data-dismiss-on-outside>
+            <summary><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3.5v9m0 0 3.3-3.3M10 12.5 6.7 9.2M4 13v3h12v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Data options</summary>
+            <div class="library-data-menu-options" aria-label="Data options">
+              <button type="button" id="exportBtn">Export backup</button>
+              <button type="button" id="shareBtn">Share snapshot of all lists</button>
+              <button type="button" id="importBtn">Import backup</button>
+            </div>
+          </details>
         </div>
       </section>
     </section>
@@ -271,13 +281,16 @@ body.is-checklist .overflow{display:block}
           <div><p class="eyebrow">YOUR CHECKLIST</p><div class="title-edit-row"><button class="list-icon-button" id="editIconButton" type="button" aria-label="Change checklist icon" title="Change checklist icon">📋</button><h1 id="listHeading">My list</h1><button class="edit-title-button" id="editTitleButton" type="button" aria-label="Edit checklist name" title="Edit checklist name"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m12.2 4.2 3.6 3.6M4 16l3.7-.8 8.5-8.5a1.8 1.8 0 0 0-2.6-2.6l-8.5 8.5L4 16Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div>
           <div class="checklist-heading-actions">
             <span class="count" id="count">0 items</span>
-            <div class="checklist-action-buttons">
-              <button class="checklist-action-button" id="shareListBtn" type="button">Share snapshot link</button>
-              <button class="checklist-action-button" id="exportListBtn" type="button">Export this list</button>
-              <div class="live-share-buttons">
-                <button class="live-share-button" id="liveShareBtn" type="button">Enable live sharing</button>
-                <button class="live-unshare-button" id="stopLiveShareBtn" type="button" hidden>Stop live sharing</button>
-              </div>
+            <div class="checklist-action-row">
+              <details class="share-menu" id="shareMenu" data-dismiss-on-outside>
+                <summary>Share</summary>
+                <div class="share-menu-items" aria-label="Share options">
+                  <button id="shareListBtn" type="button">Share snapshot link</button>
+                  <button id="liveShareBtn" type="button">Enable live sharing</button>
+                  <button class="danger" id="stopLiveShareBtn" type="button" hidden>Stop live sharing</button>
+                  <button id="exportListBtn" type="button">Export as JSON</button>
+                </div>
+              </details>
             </div>
           </div>
         </div>
@@ -667,12 +680,14 @@ body.is-checklist .overflow{display:block}
     $('liveShareBtn').textContent = list.sharedId ? 'Copy live link' : 'Enable live sharing';
     $('stopLiveShareBtn').hidden = !list.sharedId;
     $('shareListBtn').disabled = sharedLoading;
-    $('exportListBtn').disabled = sharedLoading;
+    $('liveShareBtn').disabled = sharedLoading;
+    $('stopLiveShareBtn').disabled = sharedLoading;
     $('editIconButton').disabled = sharedLoading;
     $('editTitleButton').disabled = sharedLoading;
     $('notes').disabled = sharedLoading;
     $('newTask').disabled = sharedLoading;
     $('addForm').querySelector('button[type="submit"]').disabled = sharedLoading;
+    $('exportListBtn').disabled = sharedLoading;
     document.querySelector('[data-action="clear"]').disabled = sharedLoading;
     if ($('notes').value !== list.notes) $('notes').value = list.notes;
     const done = list.tasks.filter(task => task.done).length;
@@ -789,23 +804,12 @@ body.is-checklist .overflow{display:block}
   $('shareListBtn').addEventListener('click', () => shareChecklist('list'));
   $('liveShareBtn').addEventListener('click', () => shareLiveChecklist());
   $('stopLiveShareBtn').addEventListener('click', () => stopSharing());
-  $('confirmStopSharing').addEventListener('click', () => confirmStopSharing());
-  $('firebaseTestBtn').addEventListener('click', async event => {
-    const button = event.currentTarget;
-    button.disabled = true;
-    button.textContent = 'Testing Firebase...';
-    try {
-      const {testFirebaseConnection} = await import('./firebase-share.js');
-      await testFirebaseConnection();
-      toast('Firebase connection successful.');
-    } catch (error) {
-      console.error('Firebase connection test failed.', error);
-      toast('Firebase connection failed. Check your network and Firebase configuration.');
-    } finally {
-      button.disabled = false;
-      button.textContent = 'Test Firebase connection';
-    }
+  document.addEventListener('click', event => {
+    document.querySelectorAll('details[data-dismiss-on-outside]').forEach(menu => {
+      if (!menu.contains(event.target) || event.target.closest('button')) menu.open = false;
+    });
   });
+  $('confirmStopSharing').addEventListener('click', () => confirmStopSharing());
   $('nativeShareBtn').hidden = typeof navigator.share !== 'function';
   $('nativeShareBtn').addEventListener('click', () => shareWithOs());
   $('copyShareBtn').addEventListener('click', () => copyShareUrl());

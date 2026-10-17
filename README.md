@@ -6,9 +6,11 @@ The app version is shown in the page footer. On each push to `main`, the GitHub 
 
 ## Live checklist sharing
 
-Open a checklist and choose **Turn sharing on**. The app creates a Realtime Database record and copies a link based on `https://l-plake.github.io/ChecklistApp/`, regardless of the URL used to open the app. Anyone who opens the link can see live changes and edit the checklist; edits to its name, icon, tasks, and notes sync between connected users. Use **Turn sharing off** to remove the record and invalidate its link. Use **Copy live link** to copy it again while sharing is on.
+Open a checklist and choose **Enable live sharing**. The app creates a Realtime Database record and copies a live link based on `https://l-plake.github.io/ChecklistApp/`, regardless of the URL used to open the app. Anyone who opens the link can see live changes and edit the checklist; edits to its name, icon, tasks, and notes sync between connected users. Use **Stop live sharing** to remove the record and invalidate its link. Use **Copy live link** to copy it again while sharing is on.
 
-The existing **Share all lists** action still creates a static snapshot link. Live sharing is separate and only shares the checklist currently open.
+From an open checklist, choose **Share snapshot link** to share a one-time copy containing only that checklist. Future changes will not sync through this link, and recipients can import it without changing their existing checklists. Choose **Export this list** to download a JSON backup of only the open checklist; **Export backup** in the library still exports all lists.
+
+The **Share all lists** action in the library still creates a snapshot link containing all checklists. Live sharing is separate and only shares the checklist currently open.
 
 ### Firebase setup
 

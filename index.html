@@ -58,6 +58,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .mobile-list-picker{display:none}
 .checklist-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:15px 0 22px}
 .checklist-heading-actions{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:0 0 auto}
+.checklist-action-buttons{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px}
+.checklist-action-button{padding:9px 12px;border:0;border-radius:10px;background:var(--button-subtle);color:var(--text-soft);font-size:13px;font-weight:700}
+.checklist-action-button:hover{background:var(--button-subtle-hover);color:var(--accent)}
 .live-share-buttons{display:flex;gap:7px}
 .live-share-button,.live-unshare-button{padding:9px 12px;border:0;border-radius:10px;background:var(--accent);color:var(--accent-text);font-size:13px;font-weight:700}
 .live-share-button:hover{background:var(--accent-hover)}
@@ -201,9 +204,11 @@ body.is-checklist .overflow{display:block}
  .mobile-list-picker svg{width:18px;height:18px;color:#798278}
  .checklist-heading{padding:14px 1px 19px}
  .checklist-heading{align-items:flex-start;flex-wrap:wrap}
- .checklist-heading-actions{width:100%;flex-direction:row;justify-content:space-between}
+ .checklist-heading-actions{width:100%;align-items:flex-start;flex-direction:column}
  .checklist-heading-actions{gap:5px}
+ .checklist-action-buttons{justify-content:flex-start}
  .live-share-button,.live-unshare-button{padding:8px 9px;font-size:12px}
+ .checklist-action-button{padding:8px 9px;font-size:12px}
  .count{font-size:12px}
  .task{min-height:58px}
  .add-form{gap:8px}
@@ -254,7 +259,7 @@ body.is-checklist .overflow{display:block}
         <div><h2 id="dataTitle">Your data</h2><p>Export or share all your checklists together.</p></div>
         <div class="library-tool-actions">
           <button type="button" id="exportBtn"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3.5v9m0 0 3.3-3.3M10 12.5 6.7 9.2M4 13v3h12v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Export backup</button>
-          <button type="button" id="shareBtn"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.5 10.5 12.6 7m-5.1 4.5 5.1 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="5.5" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="14.5" cy="5.5" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="14.5" cy="15.5" r="2" stroke="currentColor" stroke-width="1.5"/></svg>Share all lists</button>
+          <button type="button" id="shareBtn"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.5 10.5 12.6 7m-5.1 4.5 5.1 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="5.5" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="14.5" cy="5.5" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="14.5" cy="15.5" r="2" stroke="currentColor" stroke-width="1.5"/></svg>Share snapshot of all lists</button>
           <button type="button" id="importBtn"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.5v-9m0 0L6.7 6.8M10 3.5l3.3 3.3M4 13v3h12v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Import backup</button>
           <button type="button" id="firebaseTestBtn">Test Firebase connection</button>
         </div>
@@ -266,9 +271,13 @@ body.is-checklist .overflow{display:block}
           <div><p class="eyebrow">YOUR CHECKLIST</p><div class="title-edit-row"><button class="list-icon-button" id="editIconButton" type="button" aria-label="Change checklist icon" title="Change checklist icon">📋</button><h1 id="listHeading">My list</h1><button class="edit-title-button" id="editTitleButton" type="button" aria-label="Edit checklist name" title="Edit checklist name"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m12.2 4.2 3.6 3.6M4 16l3.7-.8 8.5-8.5a1.8 1.8 0 0 0-2.6-2.6l-8.5 8.5L4 16Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div>
           <div class="checklist-heading-actions">
             <span class="count" id="count">0 items</span>
-            <div class="live-share-buttons">
-              <button class="live-share-button" id="liveShareBtn" type="button">Turn sharing on</button>
-              <button class="live-unshare-button" id="stopLiveShareBtn" type="button" hidden>Turn sharing off</button>
+            <div class="checklist-action-buttons">
+              <button class="checklist-action-button" id="shareListBtn" type="button">Share snapshot link</button>
+              <button class="checklist-action-button" id="exportListBtn" type="button">Export this list</button>
+              <div class="live-share-buttons">
+                <button class="live-share-button" id="liveShareBtn" type="button">Enable live sharing</button>
+                <button class="live-unshare-button" id="stopLiveShareBtn" type="button" hidden>Stop live sharing</button>
+              </div>
             </div>
           </div>
         </div>
@@ -320,10 +329,10 @@ body.is-checklist .overflow{display:block}
   <div class="sheet-content">
     <div class="sheet-handle" aria-hidden="true"></div>
     <div class="sheet-heading"><h2 id="shareTitle">Share all lists</h2><button class="sheet-close" type="button" data-close="shareSheet" aria-label="Close sharing options">×</button></div>
-    <p class="dialog-hint">Choose how you want to share your checklists.</p>
+    <p class="dialog-hint" id="shareHint">This snapshot will not sync future changes.</p>
     <div class="share-options">
-      <button class="share-option primary" id="nativeShareBtn" type="button">Share with your device…</button>
-      <button class="share-option secondary" id="copyShareBtn" type="button">Copy link</button>
+      <button class="share-option primary" id="nativeShareBtn" type="button">Share snapshot…</button>
+      <button class="share-option secondary" id="copyShareBtn" type="button">Copy snapshot link</button>
     </div>
     <div class="dialog-actions"><button class="cancel-button" type="button" data-close="shareSheet">Cancel</button></div>
   </div>
@@ -342,7 +351,7 @@ body.is-checklist .overflow{display:block}
     <div class="sheet-handle" aria-hidden="true"></div>
     <div class="sheet-heading"><h2 id="stopSharingTitle">Turn off live sharing?</h2><button class="sheet-close" type="button" data-close="stopSharingSheet" aria-label="Close stop sharing prompt">×</button></div>
     <p class="dialog-hint" id="stopSharingHint">The live link will stop working for everyone. Your checklist and its items will stay here.</p>
-    <div class="dialog-actions"><button class="cancel-button" type="button" data-close="stopSharingSheet">Keep sharing</button><button class="danger-button" id="confirmStopSharing" type="button">Turn sharing off</button></div>
+    <div class="dialog-actions"><button class="cancel-button" type="button" data-close="stopSharingSheet">Keep live sharing</button><button class="danger-button" id="confirmStopSharing" type="button">Stop live sharing</button></div>
   </div>
 </dialog>
 <dialog class="form-sheet" id="themeSheet" aria-labelledby="themeTitle">
@@ -432,6 +441,7 @@ body.is-checklist .overflow{display:block}
   let sharedSubscriptionToken = 0;
   let sharedInitialReady = true;
   let pendingStopSharing = null;
+  let shareScope = 'all';
   const sharedBases = new Map();
   const sharedWriteTimeouts = new Map();
   const getFirebase = () => {
@@ -654,8 +664,10 @@ body.is-checklist .overflow{display:block}
     $('editIconButton').textContent = list.icon;
     $('editIconButton').setAttribute('aria-label', `Change checklist icon, current icon ${list.icon}`);
     $('listHeading').textContent = list.title || 'Untitled checklist';
-    $('liveShareBtn').textContent = list.sharedId ? 'Copy live link' : 'Turn sharing on';
+    $('liveShareBtn').textContent = list.sharedId ? 'Copy live link' : 'Enable live sharing';
     $('stopLiveShareBtn').hidden = !list.sharedId;
+    $('shareListBtn').disabled = sharedLoading;
+    $('exportListBtn').disabled = sharedLoading;
     $('editIconButton').disabled = sharedLoading;
     $('editTitleButton').disabled = sharedLoading;
     $('notes').disabled = sharedLoading;
@@ -772,7 +784,9 @@ body.is-checklist .overflow{display:block}
     $('renameIconPicker').querySelector('button')?.focus();
   });
   $('exportBtn').addEventListener('click', () => exportBackup());
-  $('shareBtn').addEventListener('click', () => shareChecklist());
+  $('exportListBtn').addEventListener('click', () => exportChecklist());
+  $('shareBtn').addEventListener('click', () => shareChecklist('all'));
+  $('shareListBtn').addEventListener('click', () => shareChecklist('list'));
   $('liveShareBtn').addEventListener('click', () => shareLiveChecklist());
   $('stopLiveShareBtn').addEventListener('click', () => stopSharing());
   $('confirmStopSharing').addEventListener('click', () => confirmStopSharing());
@@ -899,8 +913,31 @@ body.is-checklist .overflow{display:block}
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     toast('Backup exported. Keep it somewhere safe.');
   };
-  const createShareUrl = () => {
-    const snapshot = {...state, lists: state.lists.map(list => ({...list, sharedId: ''}))};
+  const exportChecklist = () => {
+    const list = activeList();
+    const backup = {...state, lists: [{...list, sharedId: ''}], activeListId: list.id};
+    const safeTitle = (list.title || 'checklist')
+      .replace(/[<>:"/\\|?*\x00-\x1f]/g, '-')
+      .replace(/[. ]+$/g, '')
+      .slice(0, 80) || 'checklist';
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `checklist-${safeTitle}.json`;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast(`"${list.title}" exported.`);
+  };
+  const createShareUrl = lists => {
+    const sharedLists = lists.map(list => ({...list, sharedId: ''}));
+    const snapshot = {
+      ...state,
+      lists: sharedLists,
+      activeListId: sharedLists.some(list => list.id === state.activeListId)
+        ? state.activeListId
+        : sharedLists[0].id
+    };
     const bytes = new TextEncoder().encode(JSON.stringify(snapshot));
     let binary = '';
     for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
@@ -952,7 +989,7 @@ body.is-checklist .overflow{display:block}
       toast(firebaseFailureMessage(error, 'Could not share this checklist. Check your Firebase setup and connection.'));
     } finally {
       button.disabled = false;
-      button.textContent = activeList().sharedId ? 'Copy live link' : 'Turn sharing on';
+      button.textContent = activeList().sharedId ? 'Copy live link' : 'Enable live sharing';
     }
   };
   const stopSharing = () => {
@@ -1019,27 +1056,47 @@ body.is-checklist .overflow{display:block}
       toast(firebaseFailureMessage(error, 'Could not open this shared checklist. Check the link, Firebase access, and your connection.'));
     }
   };
-  const shareChecklist = () => showDialog('shareSheet');
+  const shareChecklist = scope => {
+    shareScope = scope;
+    const isSingleList = scope === 'list';
+    $('shareTitle').textContent = isSingleList ? 'Share a list snapshot' : 'Share all lists snapshot';
+    $('shareHint').textContent = isSingleList
+      ? `Share a copy of "${activeList().title}". Future changes will not sync.`
+      : 'Share a copy of your checklists. Future changes will not sync.';
+    showDialog('shareSheet');
+  };
+  const selectedShareLists = () => shareScope === 'list' ? [activeList()] : state.lists;
   const shareWithOs = async () => {
-    const url = createShareUrl();
+    const lists = selectedShareLists();
+    const isSingleList = shareScope === 'list';
+    const url = createShareUrl(lists);
     $('shareSheet').close();
     try {
-      await navigator.share({title: 'My Checklist', text: 'Here are my checklists.', url});
+      await navigator.share({
+        title: isSingleList ? lists[0].title : 'My Checklist',
+        text: isSingleList ? `Here is my checklist: ${lists[0].title}.` : 'Here are my checklists.',
+        url
+      });
       toast('Share link ready to send.');
     } catch (error) {
       if (error.name !== 'AbortError') toast('Could not open the share menu. Try copying the link instead.');
     }
   };
   const copyShareUrl = async () => {
-    const url = createShareUrl();
+    const isSingleList = shareScope === 'list';
+    const url = createShareUrl(selectedShareLists());
     $('shareSheet').close();
     try {
       if (!navigator.clipboard?.writeText) throw Error('Clipboard unavailable');
       await navigator.clipboard.writeText(url);
-      toast('Share URL copied. Anyone with the link can view this checklist.');
+      toast(isSingleList
+        ? 'Snapshot link copied. Anyone with the link can import this list.'
+        : 'Snapshot link copied. Anyone with the link can import your checklists.');
     } catch (_) {
       if (window.prompt('Copy this share URL:', url) === null) toast('Share URL was not copied.');
-      else toast('Share URL ready to paste. Anyone with the link can view this checklist.');
+      else toast(isSingleList
+        ? 'Snapshot link ready to paste. Anyone with the link can import this list.'
+        : 'Snapshot link ready to paste. Anyone with the link can import your checklists.');
     }
   };
   const deleteChecklist = () => {

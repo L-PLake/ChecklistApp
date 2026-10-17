@@ -117,6 +117,15 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
 .theme-option{display:flex;align-items:center;gap:11px;min-height:48px;padding:10px 13px;border:1px solid var(--line);border-radius:11px;background:var(--panel);font-weight:650;cursor:pointer}
 .theme-option:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
 .theme-option input{width:18px;height:18px;margin:0;accent-color:var(--accent)}
+.shared-import-preview{display:grid;gap:8px;max-height:min(35vh,280px);overflow-y:auto;margin:-4px 0 12px;padding-right:4px}
+.shared-import-list{min-width:0;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.shared-import-list:last-child{padding-bottom:0;border-bottom:0}
+.shared-import-list-title{display:flex;align-items:center;gap:8px;overflow:hidden;font-size:13px;font-weight:700}
+.shared-import-list-icon{flex:0 0 auto}
+.shared-import-list-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shared-import-tasks{display:grid;gap:2px;margin:4px 0 0 24px;padding:0;list-style:disc}
+.shared-import-tasks li,.shared-import-more{overflow:hidden;color:var(--muted);font-size:12px;line-height:1.5;text-overflow:ellipsis;white-space:nowrap}
+.shared-import-more{margin:2px 0 0 24px}
 .dialog-form label{display:block;margin-bottom:7px;font-size:13px;font-weight:700}
 .icon-picker-label{margin:0 0 7px;font-size:13px;font-weight:700}
 .dialog-form textarea{min-height:130px;resize:vertical}
@@ -294,6 +303,15 @@ body.is-checklist .overflow{display:block}
     <div class="dialog-actions"><button class="cancel-button" type="button" data-close="shareSheet">Cancel</button></div>
   </div>
 </dialog>
+<dialog class="form-sheet" id="sharedImportSheet" aria-labelledby="sharedImportTitle">
+  <div class="sheet-content">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-heading"><h2 id="sharedImportTitle">Import shared lists?</h2><button class="sheet-close" type="button" data-close="sharedImportSheet" aria-label="Close import prompt">×</button></div>
+    <p class="dialog-hint" id="sharedImportHint"></p>
+    <div class="shared-import-preview" id="sharedImportPreview" role="list" aria-label="Lists to import"></div>
+    <div class="dialog-actions"><button class="cancel-button" type="button" data-close="sharedImportSheet">Not now</button><button class="create-button" id="confirmSharedImport" type="button">Import lists</button></div>
+  </div>
+</dialog>
 <dialog class="form-sheet" id="themeSheet" aria-labelledby="themeTitle">
   <div class="sheet-content">
     <div class="sheet-handle" aria-hidden="true"></div>
@@ -352,22 +370,21 @@ body.is-checklist .overflow{display:block}
 
   const sharedData = new URLSearchParams(location.hash.slice(1)).get('share');
   let sharedLoadError = false;
+  let sharedState = null;
   if (sharedData !== null) {
     try {
       const encoded = sharedData.replace(/-/g, '+').replace(/_/g, '/');
       if (!/^[A-Za-z0-9+/]*$/.test(encoded) || encoded.length % 4 === 1) throw Error('Invalid share URL');
       const bytes = Uint8Array.from(atob(encoded.padEnd(Math.ceil(encoded.length / 4) * 4, '=')), character => character.charCodeAt(0));
-      state = normalizeState(JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(bytes)));
+      sharedState = normalizeState(JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(bytes)));
     } catch (_) {
       sharedLoadError = true;
     }
   }
-  if (sharedData === null || sharedLoadError) {
-    try {
-      const saved = localStorage.getItem(KEY);
-      if (saved) state = normalizeState(JSON.parse(saved));
-    } catch (_) {}
-  }
+  try {
+    const saved = localStorage.getItem(KEY);
+    if (saved) state = normalizeState(JSON.parse(saved));
+  } catch (_) {}
   if (!state.activeListId) state.activeListId = state.lists[0].id;
 
   let currentPage = 'library';
@@ -573,7 +590,7 @@ body.is-checklist .overflow{display:block}
       touchStart = undefined;
     }, {passive: true});
   };
-  ['createSheet', 'renameSheet', 'shareSheet', 'themeSheet'].forEach(id => closeDialogFromBackdrop($(id)));
+  ['createSheet', 'renameSheet', 'shareSheet', 'sharedImportSheet', 'themeSheet'].forEach(id => closeDialogFromBackdrop($(id)));
   document.querySelectorAll('input[name="theme"]').forEach(input => {
     input.addEventListener('change', () => {
       if (input.checked) saveTheme(input.value);
@@ -610,6 +627,21 @@ body.is-checklist .overflow{display:block}
   $('nativeShareBtn').addEventListener('click', () => shareWithOs());
   $('copyShareBtn').addEventListener('click', () => copyShareUrl());
   $('importBtn').addEventListener('click', () => $('fileInput').click());
+  $('confirmSharedImport').addEventListener('click', () => {
+    if (!sharedState) return;
+    const usedIds = new Set(state.lists.map(list => list.id));
+    const importedLists = sharedState.lists.map(list => {
+      let id = list.id;
+      while (usedIds.has(id)) id = makeId();
+      usedIds.add(id);
+      return {...list, id};
+    });
+    state.lists.push(...importedLists);
+    sharedState = null;
+    $('sharedImportSheet').close();
+    save();
+    toast(`${importedLists.length} ${importedLists.length === 1 ? 'list' : 'lists'} imported.`);
+  });
   window.addEventListener('popstate', event => {
     currentPage = event.state?.checklist ? 'checklist' : 'library';
     render();
@@ -773,6 +805,46 @@ body.is-checklist .overflow{display:block}
 
   render();
   if (sharedLoadError) toast('This share URL is invalid or damaged.');
+  if (sharedState) {
+    const count = sharedState.lists.length;
+    $('sharedImportHint').textContent = `This will add ${count} shared ${count === 1 ? 'list' : 'lists'} to your checklists. Your existing lists will stay unchanged.`;
+    $('sharedImportPreview').replaceChildren(...sharedState.lists.map(list => {
+      const preview = document.createElement('div');
+      preview.className = 'shared-import-list';
+      preview.setAttribute('role', 'listitem');
+      const heading = document.createElement('div');
+      heading.className = 'shared-import-list-title';
+      const icon = document.createElement('span');
+      icon.className = 'shared-import-list-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = list.icon;
+      const title = document.createElement('span');
+      title.className = 'shared-import-list-name';
+      title.textContent = list.title || 'Untitled checklist';
+      heading.append(icon, title);
+      preview.append(heading);
+      const visibleTasks = list.tasks.slice(0, 2);
+      if (visibleTasks.length) {
+        const tasks = document.createElement('ul');
+        tasks.className = 'shared-import-tasks';
+        tasks.setAttribute('aria-label', `Sample tasks from ${list.title || 'Untitled checklist'}`);
+        visibleTasks.forEach(task => {
+          const item = document.createElement('li');
+          item.textContent = task.text;
+          tasks.append(item);
+        });
+        preview.append(tasks);
+      }
+      if (list.tasks.length > visibleTasks.length) {
+        const more = document.createElement('p');
+        more.className = 'shared-import-more';
+        more.textContent = `+ ${list.tasks.length - visibleTasks.length} more ${list.tasks.length - visibleTasks.length === 1 ? 'task' : 'tasks'}`;
+        preview.append(more);
+      }
+      return preview;
+    }));
+    showDialog('sharedImportSheet', 'confirmSharedImport');
+  }
   if ('serviceWorker' in navigator) {
     const hadController = !!navigator.serviceWorker.controller;
     let reloading = false;

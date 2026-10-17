@@ -1,5 +1,9 @@
 # ChecklistApp
 
+## App version
+
+The app version is shown in the sticky top bar. The GitHub Actions workflow increments the version in `index.html` on each push to `main` and pushes the updated file back to the branch, which also updates the GitHub Pages site. This requires GitHub Actions to have read/write repository contents permission and the branch to allow workflow pushes. The workflow bot's version commit does not start another run.
+
 ## Live checklist sharing
 
 Open a checklist and choose **Turn sharing on**. The app creates a Realtime Database record and copies a link based on `https://l-plake.github.io/ChecklistApp/`, regardless of the URL used to open the app. Anyone who opens the link can see live changes and edit the checklist; edits to its name, icon, tasks, and notes sync between connected users. Use **Turn sharing off** to remove the record and invalidate its link. Use **Copy live link** to copy it again while sharing is on.

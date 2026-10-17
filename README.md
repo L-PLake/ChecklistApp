@@ -2,7 +2,7 @@
 
 ## App version
 
-The app version is shown in the sticky top bar. The GitHub Actions workflow increments the version in `index.html` on each push to `main` and pushes the updated file back to the branch, which also updates the GitHub Pages site. This requires GitHub Actions to have read/write repository contents permission and the branch to allow workflow pushes. The workflow bot's version commit does not start another run.
+The app version is shown in the page footer. On each push to `main`, the GitHub Pages deployment workflow updates the version in its temporary deployment copy of `index.html`, then deploys the site. The version is based on the workflow run number with an offset to continue above the existing version. No version-bump commit is pushed to the repository.
 
 ## Live checklist sharing
 

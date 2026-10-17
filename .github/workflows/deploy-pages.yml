@@ -1,0 +1,53 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Set deployed app version
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          path = Path("index.html")
+          html = path.read_text()
+          pattern = re.compile(
+              r'(<span id="appVersion" aria-label="Version )\d+(">v)\d+(</span>)'
+          )
+          version = int(os.environ["GITHUB_RUN_NUMBER"]) + 3
+          updated, count = pattern.subn(
+              lambda match: f"{match.group(1)}{version}{match.group(2)}{version}{match.group(3)}",
+              html,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit("Could not find the app version label in index.html.")
+          path.write_text(updated)
+          PY
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

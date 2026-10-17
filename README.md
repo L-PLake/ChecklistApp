@@ -4,6 +4,8 @@
 
 The app version is shown in the page footer. On each push to `main`, the GitHub Pages deployment workflow updates the version in its temporary deployment copy of `index.html`, then deploys the site. The version is based on the workflow run number with an offset to continue above the existing version. No version-bump commit is pushed to the repository.
 
+When the app detects a newer deployment, the footer shows an **Update available** button (including the new version when detected). Select it to reload and use the newer version; until then, the current page remains open.
+
 ## Live checklist sharing
 
 Open a checklist and choose **Enable live sharing**. The app creates a Realtime Database record and copies a live link based on `https://l-plake.github.io/ChecklistApp/`, regardless of the URL used to open the app. Anyone who opens the link can see live changes and edit the checklist; edits to its name, icon, tasks, and notes sync between connected users. Use **Stop live sharing** to remove the record and invalidate its link. Use **Copy live link** to copy it again while sharing is on.

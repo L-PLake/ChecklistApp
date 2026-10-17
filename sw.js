@@ -51,10 +51,15 @@ self.addEventListener('message', event => {
     const cachedPage = await cache.match('./index.html');
     const response = await fetch('./index.html', { cache: 'no-store' });
     if (!response.ok) throw new Error(`Could not check for page updates: ${response.status}`);
-    if (!cachedPage || await cachedPage.text() !== await response.clone().text()) {
+    const latestPage = await response.clone().text();
+    if (!cachedPage || await cachedPage.text() !== latestPage) {
       await cache.put('./index.html', response.clone());
+      const versionMatch = latestPage.match(/<span id="appVersion" aria-label="Version (\d+)">v\d+<\/span>/);
       const clients = await self.clients.matchAll({ type: 'window' });
-      clients.forEach(client => client.postMessage({ type: 'APP_UPDATE_AVAILABLE' }));
+      clients.forEach(client => client.postMessage({
+        type: 'APP_UPDATE_AVAILABLE',
+        version: versionMatch ? Number(versionMatch[1]) : null
+      }));
     }
   })().catch(error => {
     if (self.navigator.onLine) console.error('Could not check for page updates.', error);

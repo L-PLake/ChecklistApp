@@ -22,6 +22,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .app-shell{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
 .topbar{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 34px;border-bottom:1px solid var(--line);background:var(--topbar)}
 .app-footer{margin-top:auto;padding:0 16px calc(12px + env(safe-area-inset-bottom,0px));color:var(--muted);font-size:10px;line-height:1.4;text-align:right;opacity:.55}
+.app-update{margin-left:6px;padding:0;border:0;background:none;color:var(--accent);font:inherit;font-weight:700}
+.app-update:hover{text-decoration:underline;text-underline-offset:2px}
 .brand{display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;font-size:17px;font-weight:750;letter-spacing:-.025em}
 .brand-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--accent);color:var(--accent-text)}
 .brand-mark svg{width:19px;height:19px}
@@ -310,7 +312,7 @@ body.is-checklist .overflow{display:block}
     </section>
     <div id="toast" role="status" aria-live="polite"></div>
   </main>
-  <footer class="app-footer"><span id="appVersion" aria-label="Version 3">v3</span></footer>
+  <footer class="app-footer"><span id="appVersion" aria-label="Version 3">v3</span><button class="app-update" id="appUpdate" type="button" hidden>Update available</button></footer>
 </div>
 
 <dialog class="form-sheet" id="createSheet" aria-labelledby="createTitle">
@@ -1209,18 +1211,22 @@ body.is-checklist .overflow{display:block}
   }
   if ('serviceWorker' in navigator) {
     const hadController = !!navigator.serviceWorker.controller;
-    let reloading = false;
+    const currentVersion = Number($('appVersion').textContent.match(/^v(\d+)$/)?.[1]);
+    const showUpdateAvailable = version => {
+      if (Number.isInteger(version) && version <= currentVersion) return;
+      const button = $('appUpdate');
+      button.textContent = Number.isInteger(version) ? `Update to v${version}` : 'Update available';
+      button.setAttribute('aria-label', Number.isInteger(version)
+        ? `A newer version is available. Reload to update to version ${version}.`
+        : 'A newer version is available. Reload to update.');
+      button.hidden = false;
+    };
+    $('appUpdate').addEventListener('click', () => location.reload());
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (hadController && !reloading) {
-        reloading = true;
-        location.reload();
-      }
+      if (hadController) showUpdateAvailable();
     });
     navigator.serviceWorker.addEventListener('message', event => {
-      if (event.data?.type === 'APP_UPDATE_AVAILABLE' && !reloading) {
-        reloading = true;
-        location.reload();
-      }
+      if (event.data?.type === 'APP_UPDATE_AVAILABLE') showUpdateAvailable(event.data.version);
     });
     window.addEventListener('load', async () => {
       try {

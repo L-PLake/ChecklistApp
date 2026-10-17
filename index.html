@@ -46,7 +46,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .share-menu summary::-webkit-details-marker{display:none}
 .share-menu summary:hover{background:var(--accent-hover)}
 .share-menu[open] summary{background:var(--accent-hover)}
-.share-menu-items{position:absolute;z-index:4;left:0;top:calc(100% + 8px);width:min(224px,calc(100vw - 32px));padding:7px;border:1px solid var(--line);border-radius:15px;background:var(--panel);box-shadow:var(--shadow)}
+.share-menu-items{position:absolute;z-index:4;left:0;top:calc(100% + 8px);width:min(224px,calc(100vw - 32px));max-height:calc(100vh - 24px);max-height:var(--menu-max-height,calc(100dvh - 24px));overflow-y:auto;overscroll-behavior:contain;padding:7px;border:1px solid var(--line);border-radius:15px;background:var(--panel);box-shadow:var(--shadow)}
 .share-menu-items button{display:block;width:100%;padding:10px 11px;border:0;border-radius:9px;background:transparent;color:var(--text);text-align:left;font-size:14px}
 .share-menu-items button:hover{background:var(--bg)}
 .share-menu-items .danger{color:#a84236}
@@ -196,8 +196,9 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
 .library-data-menu summary::-webkit-details-marker{display:none}
 .library-data-menu summary:hover,.library-data-menu[open] summary{border-color:var(--border-strong);background:var(--panel-subtle);color:var(--accent)}
 .library-data-menu summary svg{width:17px;height:17px}
-.library-data-menu-options{position:absolute;z-index:4;left:0;top:calc(100% + 8px);width:min(260px,calc(100vw - 40px));padding:7px;border:1px solid var(--line);border-radius:15px;background:var(--panel);box-shadow:var(--shadow)}
+.library-data-menu-options{position:absolute;z-index:4;left:0;top:calc(100% + 8px);width:min(260px,calc(100vw - 40px));max-height:calc(100vh - 24px);max-height:var(--menu-max-height,calc(100dvh - 24px));overflow-y:auto;overscroll-behavior:contain;padding:7px;border:1px solid var(--line);border-radius:15px;background:var(--panel);box-shadow:var(--shadow)}
 .share-menu.align-right .share-menu-items,.library-data-menu.align-right .library-data-menu-options{left:auto;right:0}
+.share-menu.align-top .share-menu-items,.library-data-menu.align-top .library-data-menu-options{top:auto;bottom:calc(100% + 8px)}
 .library-data-menu-options button{display:block;width:100%;min-height:42px;padding:10px 11px;border:0;border-radius:9px;background:transparent;color:var(--text-soft);text-align:left;font-size:14px;font-weight:600}
 .library-data-menu-options button:hover{background:var(--bg);color:var(--accent)}
 .checklist-content{width:min(100%,850px);margin:0 auto}
@@ -816,7 +817,19 @@ body.is-checklist .overflow{display:block}
     if (menu && event.target.closest('summary')) {
       requestAnimationFrame(() => {
         menu.classList.remove('align-right');
-        if (menu.open && menu.querySelector(':scope > div').getBoundingClientRect().right > innerWidth - 8) {
+        menu.classList.remove('align-top');
+        const options = menu.querySelector(':scope > div');
+        if (!menu.open || !options) {
+          options?.style.removeProperty('--menu-max-height');
+          return;
+        }
+        const trigger = menu.querySelector(':scope > summary').getBoundingClientRect();
+        const availableBelow = Math.max(0, innerHeight - trigger.bottom - 8);
+        const availableAbove = Math.max(0, trigger.top - 8);
+        const openAbove = options.scrollHeight > availableBelow && availableAbove > availableBelow;
+        options.style.setProperty('--menu-max-height', `${openAbove ? availableAbove : availableBelow}px`);
+        if (openAbove) menu.classList.add('align-top');
+        if (options.getBoundingClientRect().right > innerWidth - 8) {
           menu.classList.add('align-right');
         }
       });

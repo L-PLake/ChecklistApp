@@ -56,6 +56,12 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .workspace-inner{width:min(100%,740px);margin:0 auto}
 .mobile-list-picker{display:none}
 .checklist-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:15px 0 22px}
+.checklist-heading-actions{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:0 0 auto}
+.live-share-buttons{display:flex;gap:7px}
+.live-share-button,.live-unshare-button{padding:9px 12px;border:0;border-radius:10px;background:var(--accent);color:var(--accent-text);font-size:13px;font-weight:700}
+.live-share-button:hover{background:var(--accent-hover)}
+.live-unshare-button{background:var(--button-subtle);color:var(--text-soft)}
+.live-unshare-button:hover{background:var(--button-subtle-hover);color:var(--accent)}
 .title-edit-row{display:flex;align-items:center;gap:9px;min-width:0}
 .title-edit-row h1{min-width:0}
 .list-icon-button{display:flex;align-items:center;justify-content:center;flex:0 0 40px;width:40px;height:40px;padding:0;border:0;border-radius:12px;background:transparent;font-size:24px;line-height:1;text-align:center}
@@ -187,6 +193,10 @@ body.is-checklist .overflow{display:block}
  .mobile-list-picker button{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;padding:0 15px;border:1px solid var(--line);border-radius:14px;background:var(--panel);text-align:left;font-size:15px;font-weight:700}
  .mobile-list-picker svg{width:18px;height:18px;color:#798278}
  .checklist-heading{padding:14px 1px 19px}
+ .checklist-heading{align-items:flex-start;flex-wrap:wrap}
+ .checklist-heading-actions{width:100%;flex-direction:row;justify-content:space-between}
+ .checklist-heading-actions{gap:5px}
+ .live-share-button,.live-unshare-button{padding:8px 9px;font-size:12px}
  .count{font-size:12px}
  .task{min-height:58px}
  .add-form{gap:8px}
@@ -239,6 +249,7 @@ body.is-checklist .overflow{display:block}
           <button type="button" id="exportBtn"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3.5v9m0 0 3.3-3.3M10 12.5 6.7 9.2M4 13v3h12v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Export backup</button>
           <button type="button" id="shareBtn"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.5 10.5 12.6 7m-5.1 4.5 5.1 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="5.5" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="14.5" cy="5.5" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="14.5" cy="15.5" r="2" stroke="currentColor" stroke-width="1.5"/></svg>Share all lists</button>
           <button type="button" id="importBtn"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.5v-9m0 0L6.7 6.8M10 3.5l3.3 3.3M4 13v3h12v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Import backup</button>
+          <button type="button" id="firebaseTestBtn">Test Firebase connection</button>
         </div>
       </section>
     </section>
@@ -246,7 +257,13 @@ body.is-checklist .overflow{display:block}
       <div class="workspace-inner">
         <div class="checklist-heading">
           <div><p class="eyebrow">YOUR CHECKLIST</p><div class="title-edit-row"><button class="list-icon-button" id="editIconButton" type="button" aria-label="Change checklist icon" title="Change checklist icon">📋</button><h1 id="listHeading">My list</h1><button class="edit-title-button" id="editTitleButton" type="button" aria-label="Edit checklist name" title="Edit checklist name"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m12.2 4.2 3.6 3.6M4 16l3.7-.8 8.5-8.5a1.8 1.8 0 0 0-2.6-2.6l-8.5 8.5L4 16Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div>
-          <span class="count" id="count">0 items</span>
+          <div class="checklist-heading-actions">
+            <span class="count" id="count">0 items</span>
+            <div class="live-share-buttons">
+              <button class="live-share-button" id="liveShareBtn" type="button">Turn sharing on</button>
+              <button class="live-unshare-button" id="stopLiveShareBtn" type="button" hidden>Turn sharing off</button>
+            </div>
+          </div>
         </div>
         <div class="checklist-notes">
           <label for="notes">Notes</label>
@@ -331,6 +348,7 @@ body.is-checklist .overflow{display:block}
 (() => {
   const KEY = 'my-offline-checklist-v1';
   const THEME_KEY = 'my-offline-checklist-theme';
+  const LIVE_SHARE_BASE_URL = 'https://l-plake.github.io/ChecklistApp/';
   const THEMES = ['system', 'light', 'dark', 'contrast'];
   const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
   const $ = id => document.getElementById(id);
@@ -339,9 +357,10 @@ body.is-checklist .overflow{display:block}
   const makeId = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const normalizeList = (list, index) => ({
     id: typeof list.id === 'string' && list.id ? list.id : `list-${index}-${makeId()}`,
+    sharedId: typeof list.sharedId === 'string' && /^[A-Za-z0-9_-]{16,40}$/.test(list.sharedId) ? list.sharedId : '',
     title: String(list.title || 'My list'),
     icon: LIST_ICONS.includes(list.icon) ? list.icon : DEFAULT_ICON,
-    tasks: Array.isArray(list.tasks) ? list.tasks.map(task => ({text: String(task?.text || ''), done: !!task?.done})).filter(task => task.text) : [],
+    tasks: Array.isArray(list.tasks) ? list.tasks.map(task => ({id: typeof task?.id === 'string' && task.id ? task.id : makeId(), text: String(task?.text || ''), done: !!task?.done})).filter(task => task.text) : [],
     notes: String(list.notes || '')
   });
   const createInitial = () => ({lists: [{id: makeId(), title: 'My list', icon: DEFAULT_ICON, tasks: [], notes: ''}], activeListId: ''});
@@ -368,7 +387,8 @@ body.is-checklist .overflow{display:block}
     throw Error('Invalid checklist');
   };
 
-  const sharedData = new URLSearchParams(location.hash.slice(1)).get('share');
+  const liveShareId = new URLSearchParams(location.search).get('live');
+  const sharedData = liveShareId ? null : new URLSearchParams(location.hash.slice(1)).get('share');
   let sharedLoadError = false;
   let sharedState = null;
   if (sharedData !== null) {
@@ -390,12 +410,108 @@ body.is-checklist .overflow{display:block}
   let currentPage = 'library';
   history.replaceState({}, '');
   const activeList = () => state.lists.find(list => list.id === state.activeListId) || state.lists[0];
+  let firebaseModulePromise;
+  let activeSharedSubscription = null;
+  let activeSharedId = '';
+  let sharedSubscriptionToken = 0;
+  let sharedInitialReady = true;
+  const sharedBases = new Map();
+  const sharedWriteTimeouts = new Map();
+  const getFirebase = () => {
+    if (!firebaseModulePromise) firebaseModulePromise = import('./firebase-share.js');
+    return firebaseModulePromise;
+  };
   let toastTimeout;
   const toast = message => {
     const element = $('toast');
     clearTimeout(toastTimeout);
     element.textContent = message;
     toastTimeout = setTimeout(() => { element.textContent = ''; }, 3000);
+  };
+  const firebaseFailureMessage = (error, fallback) => {
+    const code = String(error?.code || '');
+    const message = String(error?.message || '');
+    return code === 'PERMISSION_DENIED' || message.includes('PERMISSION_DENIED') || code === 'auth/operation-not-allowed'
+      ? 'Firebase denied access. Enable Anonymous sign-in and publish the required Realtime Database rules.'
+      : fallback;
+  };
+  const scheduleSharedListWrite = (list, shareId) => {
+    clearTimeout(sharedWriteTimeouts.get(shareId));
+    const timeout = setTimeout(async () => {
+      sharedWriteTimeouts.delete(shareId);
+      if (list.sharedId !== shareId) return;
+      const base = sharedBases.get(shareId);
+      if (!base) return;
+      try {
+        const firebase = await getFirebase();
+        await firebase.updateSharedList(shareId, list, base);
+      } catch (error) {
+        console.error('Could not save changes to the shared checklist.', error);
+        if (list.sharedId === shareId) toast(firebaseFailureMessage(error, 'Could not sync changes. Check your Firebase access and connection.'));
+      }
+    }, 250);
+    sharedWriteTimeouts.set(shareId, timeout);
+  };
+  const stopWatchingSharedList = () => {
+    sharedSubscriptionToken++;
+    if (activeSharedSubscription) activeSharedSubscription();
+    activeSharedSubscription = null;
+    activeSharedId = '';
+    sharedInitialReady = true;
+  };
+  const watchSharedList = list => {
+    if (!list?.sharedId) {
+      stopWatchingSharedList();
+      return;
+    }
+    if (activeSharedId === list.sharedId) return;
+    stopWatchingSharedList();
+    activeSharedId = list.sharedId;
+    sharedInitialReady = false;
+    const shareId = list.sharedId;
+    const token = sharedSubscriptionToken;
+    render();
+    getFirebase().then(async firebase => {
+      await firebase.authReady;
+      if (token !== sharedSubscriptionToken) return;
+      activeSharedSubscription = firebase.subscribeSharedList(shareId, sharedData => {
+        if (token !== sharedSubscriptionToken) return;
+        if (!sharedData || typeof sharedData !== 'object') {
+          sharedBases.delete(shareId);
+          stopWatchingSharedList();
+          list.sharedId = '';
+          save(false);
+          toast('This shared checklist is no longer available.');
+          return;
+        }
+        if (!state.lists.includes(list)) return;
+        const remote = normalizeList({...sharedData, id: list.id, sharedId: shareId}, 0);
+        const remoteContent = firebase.serializeSharedList(remote);
+        const mergedContent = firebase.mergeSharedList(
+          remoteContent,
+          sharedBases.get(shareId) || null,
+          firebase.serializeSharedList(list)
+        );
+        const hasLocalChanges = JSON.stringify(remoteContent) !== JSON.stringify(mergedContent);
+        sharedBases.set(shareId, remoteContent);
+        const updated = normalizeList({...mergedContent, id: list.id, sharedId: shareId}, 0);
+        list.title = updated.title;
+        list.icon = updated.icon;
+        list.tasks = updated.tasks;
+        list.notes = updated.notes;
+        sharedInitialReady = true;
+        render();
+        if (hasLocalChanges) scheduleSharedListWrite(list, shareId);
+      }, error => {
+        if (token !== sharedSubscriptionToken) return;
+        console.error('Could not listen for shared checklist changes.', error);
+        toast(firebaseFailureMessage(error, 'Live updates stopped. Check your Firebase access and connection.'));
+      });
+    }).catch(error => {
+      if (token !== sharedSubscriptionToken) return;
+      console.error('Could not connect to the shared checklist.', error);
+      toast(firebaseFailureMessage(error, 'Could not connect to this shared checklist. Check your network and Firebase setup.'));
+    });
   };
   const applyTheme = selectedTheme => {
     theme = selectedTheme;
@@ -425,19 +541,24 @@ body.is-checklist .overflow{display:block}
     if (theme === 'system') applyTheme(theme);
   });
   if (themeLoadError) toast('Could not load the saved theme; using Light.');
-  const save = () => {
+  const save = (syncRemote = true) => {
     try {
       localStorage.setItem(KEY, JSON.stringify(state));
-    } catch (_) {
+    } catch (error) {
+      console.error('Could not save checklists on this device.', error);
       toast('Could not save. Export a backup.');
     }
     render();
+    const list = activeList();
+    if (!syncRemote || currentPage !== 'checklist' || !list.sharedId) return;
+    if (activeSharedId === list.sharedId && sharedInitialReady) scheduleSharedListWrite(list, list.sharedId);
   };
   const openChecklist = (listId, addHistory = true) => {
     state.activeListId = listId;
     currentPage = 'checklist';
     if (addHistory) history.pushState({checklist: true, listId}, '');
-    save();
+    watchSharedList(activeList());
+    save(false);
   };
   const goBack = () => {
     if (history.state?.checklist) {
@@ -505,15 +626,25 @@ body.is-checklist .overflow{display:block}
   const render = () => {
     const list = activeList();
     const isChecklist = currentPage === 'checklist';
+    const sharedLoading = !!list.sharedId && activeSharedId === list.sharedId && !sharedInitialReady;
     document.body.classList.toggle('is-library', !isChecklist);
     document.body.classList.toggle('is-checklist', isChecklist);
     $('libraryScreen').hidden = isChecklist;
     $('checklistScreen').hidden = !isChecklist;
+    $('checklistScreen').setAttribute('aria-busy', String(sharedLoading));
     $('brandTitle').textContent = isChecklist ? (list.title || 'Untitled checklist') : 'My Checklist';
     renderLibrary();
     $('editIconButton').textContent = list.icon;
     $('editIconButton').setAttribute('aria-label', `Change checklist icon, current icon ${list.icon}`);
     $('listHeading').textContent = list.title || 'Untitled checklist';
+    $('liveShareBtn').textContent = list.sharedId ? 'Copy live link' : 'Turn sharing on';
+    $('stopLiveShareBtn').hidden = !list.sharedId;
+    $('editIconButton').disabled = sharedLoading;
+    $('editTitleButton').disabled = sharedLoading;
+    $('notes').disabled = sharedLoading;
+    $('newTask').disabled = sharedLoading;
+    $('addForm').querySelector('button[type="submit"]').disabled = sharedLoading;
+    document.querySelector('[data-action="clear"]').disabled = sharedLoading;
     if ($('notes').value !== list.notes) $('notes').value = list.notes;
     const done = list.tasks.filter(task => task.done).length;
     $('count').textContent = `${list.tasks.length} ${list.tasks.length === 1 ? 'item' : 'items'} · ${done} done`;
@@ -523,6 +654,7 @@ body.is-checklist .overflow{display:block}
       const check = document.createElement('input');
       check.type = 'checkbox';
       check.checked = !!task.done;
+      check.disabled = sharedLoading;
       check.setAttribute('aria-label', `Mark ${task.text} complete`);
       check.addEventListener('change', () => {
         list.tasks[index].done = check.checked;
@@ -535,6 +667,7 @@ body.is-checklist .overflow{display:block}
       remove.type = 'button';
       remove.className = 'task-remove';
       remove.textContent = '×';
+      remove.disabled = sharedLoading;
       remove.setAttribute('aria-label', `Delete ${task.text}`);
       remove.addEventListener('click', () => {
         list.tasks.splice(index, 1);
@@ -623,6 +756,24 @@ body.is-checklist .overflow{display:block}
   });
   $('exportBtn').addEventListener('click', () => exportBackup());
   $('shareBtn').addEventListener('click', () => shareChecklist());
+  $('liveShareBtn').addEventListener('click', () => shareLiveChecklist());
+  $('stopLiveShareBtn').addEventListener('click', () => stopSharing());
+  $('firebaseTestBtn').addEventListener('click', async event => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    button.textContent = 'Testing Firebase...';
+    try {
+      const {testFirebaseConnection} = await import('./firebase-share.js');
+      await testFirebaseConnection();
+      toast('Firebase connection successful.');
+    } catch (error) {
+      console.error('Firebase connection test failed.', error);
+      toast('Firebase connection failed. Check your network and Firebase configuration.');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Test Firebase connection';
+    }
+  });
   $('nativeShareBtn').hidden = typeof navigator.share !== 'function';
   $('nativeShareBtn').addEventListener('click', () => shareWithOs());
   $('copyShareBtn').addEventListener('click', () => copyShareUrl());
@@ -709,7 +860,12 @@ body.is-checklist .overflow{display:block}
       input.focus();
       return;
     }
-    activeList().tasks.push({text, done: false});
+    if (activeList().sharedId && activeList().tasks.length >= 200) {
+      toast('Shared checklists can have up to 200 items.');
+      input.focus();
+      return;
+    }
+    activeList().tasks.push({id: makeId(), text, done: false});
     input.value = '';
     save();
     input.focus();
@@ -726,13 +882,113 @@ body.is-checklist .overflow{display:block}
     toast('Backup exported. Keep it somewhere safe.');
   };
   const createShareUrl = () => {
-    const bytes = new TextEncoder().encode(JSON.stringify(state));
+    const snapshot = {...state, lists: state.lists.map(list => ({...list, sharedId: ''}))};
+    const bytes = new TextEncoder().encode(JSON.stringify(snapshot));
     let binary = '';
     for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
     const encoded = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
     const url = new URL(location.href);
     url.hash = `share=${encoded}`;
     return url.href;
+  };
+  const createLiveShareUrl = shareId => {
+    const url = new URL(LIVE_SHARE_BASE_URL);
+    url.searchParams.set('live', shareId);
+    url.hash = '';
+    return url.href;
+  };
+  const copyLiveShareUrl = async shareId => {
+    const url = createLiveShareUrl(shareId);
+    try {
+      if (!navigator.clipboard?.writeText) throw Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(url);
+      toast('Live link copied. Anyone with it can view and edit this checklist.');
+    } catch (error) {
+      console.error('Could not copy the live checklist link.', error);
+      if (window.prompt('Copy this live checklist link:', url) === null) toast('Live link was not copied.');
+      else toast('Anyone with this link can view and edit this checklist.');
+    }
+  };
+  const shareLiveChecklist = async () => {
+    const button = $('liveShareBtn');
+    const list = activeList();
+    if (!list.sharedId && list.tasks.length > 200) {
+      toast('Live sharing supports up to 200 items per checklist.');
+      return;
+    }
+    if (!list.sharedId && (list.title.length > 80 || list.icon.length > 16 || list.notes.length > 4000 || list.tasks.some(task => task.id.length > 80 || task.text.length > 240))) {
+      toast('Shorten the checklist content to meet Firebase live-sharing limits.');
+      return;
+    }
+    button.disabled = true;
+    try {
+      if (!list.sharedId) {
+        const firebase = await getFirebase();
+        list.sharedId = await firebase.createSharedList(list);
+        if (activeList() === list) watchSharedList(list);
+        save(false);
+      }
+      await copyLiveShareUrl(list.sharedId);
+    } catch (error) {
+      console.error('Could not create a live checklist link.', error);
+      toast(firebaseFailureMessage(error, 'Could not share this checklist. Check your Firebase setup and connection.'));
+    } finally {
+      button.disabled = false;
+      button.textContent = activeList().sharedId ? 'Copy live link' : 'Turn sharing on';
+    }
+  };
+  const stopSharing = async () => {
+    const list = activeList();
+    if (!list.sharedId) return;
+    if (!confirm('Stop sharing this checklist? Its live link will stop working for everyone.')) return;
+    const shareId = list.sharedId;
+    const wasWatching = activeSharedId === shareId;
+    if (wasWatching) stopWatchingSharedList();
+    clearTimeout(sharedWriteTimeouts.get(shareId));
+    sharedWriteTimeouts.delete(shareId);
+    try {
+      const firebase = await getFirebase();
+      await firebase.deleteSharedList(shareId);
+      sharedBases.delete(shareId);
+      list.sharedId = '';
+      save(false);
+      toast('Live sharing stopped. You can create a new link later.');
+    } catch (error) {
+      if (wasWatching) watchSharedList(list);
+      console.error('Could not stop sharing the checklist.', error);
+      toast(firebaseFailureMessage(error, 'Could not stop sharing. Check your Firebase access and connection.'));
+    }
+  };
+  const openLiveSharedList = async shareId => {
+    if (!/^[A-Za-z0-9_-]{16,40}$/.test(shareId)) {
+      toast('This live checklist link is invalid.');
+      return;
+    }
+    toast('Connecting to the shared checklist...');
+    try {
+      const firebase = await getFirebase();
+      const remoteList = await firebase.readSharedList(shareId);
+      if (!remoteList || typeof remoteList !== 'object') throw new Error('Shared checklist was not found.');
+      let list = state.lists.find(savedList => savedList.sharedId === shareId);
+      const updated = normalizeList({...remoteList, id: list?.id || makeId(), sharedId: shareId}, state.lists.length);
+      if (list) Object.assign(list, updated);
+      else {
+        list = updated;
+        state.lists.push(list);
+      }
+      state.activeListId = list.id;
+      currentPage = 'checklist';
+      const sharedUrl = new URL(location.href);
+      const libraryUrl = new URL(sharedUrl);
+      libraryUrl.searchParams.delete('live');
+      history.replaceState({}, '', libraryUrl);
+      history.pushState({checklist: true, listId: list.id}, '', sharedUrl);
+      watchSharedList(list);
+      save(false);
+    } catch (error) {
+      console.error('Could not open the live shared checklist.', error);
+      toast(firebaseFailureMessage(error, 'Could not open this shared checklist. Check the link, Firebase access, and your connection.'));
+    }
   };
   const shareChecklist = () => showDialog('shareSheet');
   const shareWithOs = async () => {
@@ -764,6 +1020,7 @@ body.is-checklist .overflow{display:block}
     }
     const list = activeList();
     if (!confirm(`Delete "${list.title}" and all its items?`)) return;
+    if (activeSharedId === list.sharedId) stopWatchingSharedList();
     const index = state.lists.indexOf(list);
     state.lists.splice(index, 1);
     state.activeListId = state.lists[Math.max(0, index - 1)].id;
@@ -783,6 +1040,9 @@ body.is-checklist .overflow{display:block}
         break;
       case 'delete':
         deleteChecklist();
+        break;
+      case 'stopSharing':
+        stopSharing();
         break;
       case 'theme':
         showDialog('themeSheet');
@@ -804,6 +1064,7 @@ body.is-checklist .overflow{display:block}
   });
 
   render();
+  if (liveShareId) openLiveSharedList(liveShareId);
   if (sharedLoadError) toast('This share URL is invalid or damaged.');
   if (sharedState) {
     const count = sharedState.lists.length;

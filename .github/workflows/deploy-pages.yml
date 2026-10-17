@@ -33,9 +33,9 @@ jobs:
           path = Path("index.html")
           html = path.read_text()
           pattern = re.compile(
-              r'(<span id="appVersion" aria-label="Version )\d+(">v)\d+(</span>)'
+              r'(<span id="appVersion" aria-label="Version )\d+\.\d+(">v)\d+\.\d+(</span>)'
           )
-          version = int(os.environ["GITHUB_RUN_NUMBER"]) + 3
+          version = f"1.{int(os.environ['GITHUB_RUN_NUMBER']) + 2}"
           updated, count = pattern.subn(
               lambda match: f"{match.group(1)}{version}{match.group(2)}{version}{match.group(3)}",
               html,

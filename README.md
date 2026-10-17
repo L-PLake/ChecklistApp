@@ -2,7 +2,7 @@
 
 ## App version
 
-The app version is shown in the page footer. On each push to `main`, the GitHub Pages deployment workflow updates the version in its temporary deployment copy of `index.html`, then deploys the site. The version is based on the workflow run number with an offset to continue above the existing version. No version-bump commit is pushed to the repository.
+The app version is shown in the page footer as `major.minor`. On each push to `main`, the GitHub Pages deployment workflow updates the minor version in its temporary deployment copy of `index.html`; the next deployment is `1.10`, followed by `1.11`, `1.12`, and so on. The major version stays at `1`. No version-bump commit is pushed to the repository.
 
 When the app detects a newer deployment, the footer shows an **Update available** button (including the new version when detected). Select it to reload and use the newer version; until then, the current page remains open.
 

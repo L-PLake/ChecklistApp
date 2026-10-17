@@ -54,11 +54,11 @@ self.addEventListener('message', event => {
     const latestPage = await response.clone().text();
     if (!cachedPage || await cachedPage.text() !== latestPage) {
       await cache.put('./index.html', response.clone());
-      const versionMatch = latestPage.match(/<span id="appVersion" aria-label="Version (\d+)">v\d+<\/span>/);
+      const versionMatch = latestPage.match(/<span id="appVersion" aria-label="Version (\d+\.\d+)">v\d+\.\d+<\/span>/);
       const clients = await self.clients.matchAll({ type: 'window' });
       clients.forEach(client => client.postMessage({
         type: 'APP_UPDATE_AVAILABLE',
-        version: versionMatch ? Number(versionMatch[1]) : null
+        version: versionMatch ? versionMatch[1] : null
       }));
     }
   })().catch(error => {

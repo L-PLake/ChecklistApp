@@ -141,6 +141,12 @@ dialog::backdrop{background:rgba(25,34,29,.35);backdrop-filter:blur(2px)}
 .icon-option[aria-pressed=true]{border-color:var(--accent);background:transparent;box-shadow:none}
 .dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:17px}
 .dialog-actions button{padding:10px 15px;border:0;border-radius:10px;font-weight:700}
+.danger-button{background:#a84236;color:#fff}
+.danger-button:hover{background:#88362d}
+:root[data-theme="dark"] .danger-button{background:#b94c40}
+:root[data-theme="dark"] .danger-button:hover{background:#d05b4d}
+:root[data-theme="contrast"] .danger-button{background:#ff0;color:#000}
+:root[data-theme="contrast"] .danger-button:hover{background:#e6e600}
 .share-options{display:grid;gap:9px}
 .share-option{width:100%;min-height:46px;padding:11px 15px;border:0;border-radius:10px;font-weight:700}
 .share-option.primary{background:var(--accent);color:var(--accent-text)}
@@ -329,6 +335,14 @@ body.is-checklist .overflow{display:block}
     <div class="dialog-actions"><button class="cancel-button" type="button" data-close="sharedImportSheet">Not now</button><button class="create-button" id="confirmSharedImport" type="button">Import lists</button></div>
   </div>
 </dialog>
+<dialog class="form-sheet" id="stopSharingSheet" aria-labelledby="stopSharingTitle" aria-describedby="stopSharingHint">
+  <div class="sheet-content">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-heading"><h2 id="stopSharingTitle">Turn off live sharing?</h2><button class="sheet-close" type="button" data-close="stopSharingSheet" aria-label="Close stop sharing prompt">×</button></div>
+    <p class="dialog-hint" id="stopSharingHint">The live link will stop working for everyone. Your checklist and its items will stay here.</p>
+    <div class="dialog-actions"><button class="cancel-button" type="button" data-close="stopSharingSheet">Keep sharing</button><button class="danger-button" id="confirmStopSharing" type="button">Turn sharing off</button></div>
+  </div>
+</dialog>
 <dialog class="form-sheet" id="themeSheet" aria-labelledby="themeTitle">
   <div class="sheet-content">
     <div class="sheet-handle" aria-hidden="true"></div>
@@ -415,6 +429,7 @@ body.is-checklist .overflow{display:block}
   let activeSharedId = '';
   let sharedSubscriptionToken = 0;
   let sharedInitialReady = true;
+  let pendingStopSharing = null;
   const sharedBases = new Map();
   const sharedWriteTimeouts = new Map();
   const getFirebase = () => {
@@ -758,6 +773,7 @@ body.is-checklist .overflow{display:block}
   $('shareBtn').addEventListener('click', () => shareChecklist());
   $('liveShareBtn').addEventListener('click', () => shareLiveChecklist());
   $('stopLiveShareBtn').addEventListener('click', () => stopSharing());
+  $('confirmStopSharing').addEventListener('click', () => confirmStopSharing());
   $('firebaseTestBtn').addEventListener('click', async event => {
     const button = event.currentTarget;
     button.disabled = true;
@@ -937,15 +953,24 @@ body.is-checklist .overflow{display:block}
       button.textContent = activeList().sharedId ? 'Copy live link' : 'Turn sharing on';
     }
   };
-  const stopSharing = async () => {
+  const stopSharing = () => {
     const list = activeList();
     if (!list.sharedId) return;
-    if (!confirm('Stop sharing this checklist? Its live link will stop working for everyone.')) return;
-    const shareId = list.sharedId;
+    pendingStopSharing = {list, shareId: list.sharedId};
+    showDialog('stopSharingSheet', 'confirmStopSharing');
+  };
+  const confirmStopSharing = async () => {
+    if (!pendingStopSharing) return;
+    const {list, shareId} = pendingStopSharing;
+    pendingStopSharing = null;
+    $('stopSharingSheet').close();
+    if (list.sharedId !== shareId) return;
     const wasWatching = activeSharedId === shareId;
     if (wasWatching) stopWatchingSharedList();
     clearTimeout(sharedWriteTimeouts.get(shareId));
     sharedWriteTimeouts.delete(shareId);
+    const button = $('confirmStopSharing');
+    button.disabled = true;
     try {
       const firebase = await getFirebase();
       await firebase.deleteSharedList(shareId);
@@ -957,6 +982,8 @@ body.is-checklist .overflow{display:block}
       if (wasWatching) watchSharedList(list);
       console.error('Could not stop sharing the checklist.', error);
       toast(firebaseFailureMessage(error, 'Could not stop sharing. Check your Firebase access and connection.'));
+    } finally {
+      button.disabled = false;
     }
   };
   const openLiveSharedList = async shareId => {

@@ -328,7 +328,7 @@ body.is-checklist .overflow{display:block}
   });
   const createInitial = () => ({lists: [{id: makeId(), title: 'My list', icon: DEFAULT_ICON, tasks: [], notes: ''}], activeListId: ''});
   let state = createInitial();
-  let theme = 'light';
+  let theme = 'system';
   let themeLoadError = false;
   try {
     const savedTheme = localStorage.getItem(THEME_KEY);

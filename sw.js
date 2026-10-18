@@ -1,6 +1,6 @@
-const CACHE = 'my-offline-checklist-v3';
+const CACHE = 'my-offline-checklist-v4';
 const CACHE_PREFIX = 'my-offline-checklist-';
-const FILES = ['./', './index.html', './manifest.json', './icon.svg'];
+const FILES = ['./', './index.html', './checklist-data.mjs', './manifest.json', './icon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(async cache => {
     await Promise.all(FILES.map(async file => {

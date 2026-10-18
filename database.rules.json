@@ -1,0 +1,43 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "sharedLists": {
+      "$shareId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        ".validate": "newData.hasChildren(['title', 'icon', 'notes']) && newData.child('tasks').numChildren() <= 200",
+        "title": {
+          ".validate": "newData.isString() && newData.val().length <= 80"
+        },
+        "icon": {
+          ".validate": "newData.isString() && newData.val().length <= 16"
+        },
+        "notes": {
+          ".validate": "newData.isString() && newData.val().length <= 4000"
+        },
+        "tasks": {
+          ".validate": "newData.val() == null || (newData.hasChildren() && newData.numChildren() <= 200)",
+          "$taskId": {
+            ".validate": "newData.hasChildren(['id', 'text', 'done'])",
+            "id": {
+              ".validate": "newData.isString() && newData.val().length <= 80"
+            },
+            "text": {
+              ".validate": "newData.isString() && newData.val().length <= 240"
+            },
+            "done": {
+              ".validate": "newData.isBoolean()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+  }
+}
